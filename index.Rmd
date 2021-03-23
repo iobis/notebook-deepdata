@@ -1,0 +1,184 @@
+---
+title: ISA DeepData
+date: "`r Sys.Date()`"
+author: Pieter Provoost
+output: rmdformats::robobook
+editor_options: 
+  chunk_output_type: console
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "web") })  
+---
+
+This notebook processes data from the [International Seabed Authority](https://www.isa.org.jm/) (ISA) [DeepData](https://data.isa.org.jm/isa/map/) database into Darwin Core archives.
+
+## Fetching the data from the ISA server
+
+The DeepData dataset is delivered to OBIS via FTP. Let's list the files on the FTP server and download the most recent JSON file to a temporary directory.
+
+```{r message=FALSE, warning=FALSE}
+require(RCurl)
+library(stringr)
+library(dplyr)
+
+readRenviron("env.txt")
+url <- Sys.getenv("deepdata_url")
+res <- getURL(url, verbose = TRUE, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+
+filenames <- unlist(strsplit(res, "\\n"))
+filenames <- sort(filenames[str_detect(filenames, ".json")], decreasing = TRUE)
+
+if (length(filenames) == 0) {
+  stop("No files found")
+}
+
+file_url <- paste0(url, "/", filenames[1])
+temp_file <- tempfile(pattern = "deepdata_", tmpdir = tempdir(), fileext = ".json")
+download.file(file_url, temp_file)
+```
+
+## Parsing the JSON file
+
+As the JSON file is encoded in the non-standard `ISO-8859-1`, we need to use `readLines` before parsing the data with the jsonlite package.
+
+```{r message=FALSE, warning=FALSE}
+library(jsonlite)
+library(purrr)
+
+con <- file(temp_file)
+lines <- readLines(file(temp_file, encoding = "ISO-8859-1"), warn = FALSE)
+close(con)
+records <- fromJSON(lines, simplifyDataFrame = TRUE)$DEEPDATA
+```
+
+## Generating Darwin Core archives
+
+We can now extract a list of distinct datasets from the data frame, and generate a Darwin Core archive for each dataset.
+
+```{r message=FALSE, warning=FALSE}
+titles <- records %>%
+  distinct(Metadata$title) %>%
+  pull("Metadata$title")
+
+titles
+```
+
+### Extracting occurrence data
+
+Let's first create a new column for the `occurrenceID`, this will be used later to link together the measurements and occurrences.
+
+```{r message=FALSE, warning=FALSE}
+records$id <- records$Occurrence$occurrenceID
+stopifnot(length(unique(records$id)) == nrow(records))
+```
+
+Here I'm creating a subset for testing purposes. At the end of the notebook we will process all subsets.
+
+```{r message=FALSE, warning=FALSE}
+df <- records %>%
+  filter(Metadata$title == titles[1])
+```
+
+Now we can select and process the columns that will go into the occurrence table.
+
+```{r message=FALSE, warning=FALSE}
+extract_occurrences <- function(df) {
+    df %>%
+      select("id", "Occurrence", "Event", "Location", "Identification", "Record-level", "Taxon") %>%
+      jsonlite::flatten() %>%
+      rename_all(~str_replace(., ".*\\.", "")) %>%
+      as_tibble()
+}
+
+occ <- extract_occurrences(records)
+```
+
+### Cleaning up occurrence data
+
+Let's take a look at `scientificName` and `scientificNameID`.
+
+```{r message=FALSE, warning=FALSE}
+occ %>%
+  group_by(scientificName) %>%
+  summarize(records = n()) %>%
+  arrange(desc(records)) %>%
+  rmarkdown::paged_table()
+```
+
+```{r message=FALSE, warning=FALSE}
+occ %>%
+  group_by(scientificNameID) %>%
+  summarize(records = n()) %>%
+  arrange(desc(records)) %>%
+  rmarkdown::paged_table()
+```
+
+Note that in some cases `scientificName` only contains the species epithet, this is something that should be fixed at ISA. Let's try to clean up the scientific names before we do taxon matching with WoRMS. Here I'm using the `gni_parse()` function from the `taxize` package, which connects to the [GNI](http://gni.globalnames.org/) name parser. If a name cannot be parsed, I'm keeping the original.
+
+```{r message=FALSE, warning=FALSE}
+library(taxize)
+library(purrr)
+
+names <- unique(occ$scientificName)
+names <- names[names != ""]
+
+clean_name <- function(name) {
+  parsed <- tryCatch({
+    res <- gni_parse(name)
+    stopifnot(nrow(res) == 1)
+    return(res$canonical[1])
+  },
+  error = function(cond){
+    return(name)
+  })
+}
+
+names_clean <- unlist(map(names, clean_name))
+```
+
+Now let's try taxon matching using the cleaned names.
+
+```{r message=FALSE, warning=FALSE}
+library(worrms)
+
+match_name <- function(name) {
+  lsid <- tryCatch({
+    res <- wm_records_names(name)
+    matches <- res[[1]] %>%
+      filter(match_type == "exact" | match_type == "exact_genus")
+    if (nrow(matches) > 1) {
+      message(paste0("Multiple exact matches for ", name))
+    }
+    return(matches$lsid[1])
+  }, error = function(cond) {
+    return(NA)
+  })
+}
+
+lsids <- unlist(map(names_clean, match_name))
+```
+
+I'll use the resulting LSIDs to replace the provided `scientificNameIDs`.
+
+```{r message=FALSE, warning=FALSE}
+names <- tibble(scientificName = names, lsid = lsids)
+occ <- occ %>%
+  left_join(names, by = "scientificName") %>%
+  select(-scientificNameID) %>%
+  rename(scientificNameID = lsid)
+```
+
+Let's take another look at the top `scientificName` and `scientificNameID` after mathing:
+
+```{r message=FALSE, warning=FALSE}
+occ %>%
+  group_by(scientificName, scientificNameID) %>%
+  summarize(records = n()) %>%
+  arrange(desc(records)) %>%
+  head(30) %>%
+  knitr::kable()
+```
+
+### Extracting MeasurementOrFact data
+
+## Bringing it all together
+
