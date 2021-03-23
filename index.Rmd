@@ -2,7 +2,8 @@
 title: ISA DeepData
 date: "`r Sys.Date()`"
 author: Pieter Provoost
-output: rmdformats::robobook
+output: (function(...) {
+  rmdformats::robobook(toc_depth = 3, ...) })
 editor_options: 
   chunk_output_type: console
 knit: (function(inputFile, encoding) {
@@ -74,7 +75,7 @@ stopifnot(length(unique(records$id)) == nrow(records))
 Here I'm creating a subset for testing purposes. At the end of the notebook we will process all subsets.
 
 ```{r message=FALSE, warning=FALSE}
-df <- records %>%
+records_test <- records %>%
   filter(Metadata$title == titles[1])
 ```
 
@@ -89,7 +90,7 @@ extract_occurrences <- function(df) {
       as_tibble()
 }
 
-occ <- extract_occurrences(records)
+occ <- extract_occurrences(records_test)
 ```
 
 ### Cleaning up occurrence data
@@ -179,6 +180,48 @@ occ %>%
 ```
 
 ### Extracting MeasurementOrFact data
+
+```{r message=FALSE, warning=FALSE}
+extract_mof <- function(df) {
+    df %>%
+      select("id", "MeasurementOrFact") %>%
+      jsonlite::flatten() %>%
+      rename_all(~str_replace(., ".*\\.", "")) %>%
+      filter(measurementType != "") %>%
+      as_tibble()
+}
+
+mof <- extract_mof(records)
+mof
+```
+
+### Generating EML
+
+As the metadata records are all the same within a dataset, let's take the first and use that to populate the EML. Note that the EML template is read from `eml.xml`:
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(glue)
+
+generate_eml <- function(df) {
+  eml <- read_file("eml.xml")
+  metadata <- df$Metadata[1,]
+  firstname <- strsplit(metadata$Contact$name, " ")[[1]][1]
+  lastname <- strsplit(metadata$Contact$name, " ")[[1]][2]
+  organization <- metadata$Contact$organisation
+  email <- metadata$Contact$email
+  position <- metadata$Contact$position
+  abstract <- metadata$abstract
+  title <- metadata$title
+  citation <- metadata$citation
+  packageid <- "https://datasets.obis.org/deepdata"
+  pubdate <- format(Sys.time(), "%Y-%m-%d")
+  datestamp <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  glue(eml)
+}
+
+generate_eml(records_test)
+```
 
 ## Bringing it all together
 
