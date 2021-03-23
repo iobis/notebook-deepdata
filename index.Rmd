@@ -14,7 +14,7 @@ This notebook processes data from the [International Seabed Authority](https://w
 
 ## Fetching the data from the ISA server
 
-The DeepData dataset is delivered to OBIS via FTP. Let's list the files on the FTP server and download the most recent JSON file to a temporary directory.
+The DeepData dataset is delivered to OBIS via FTP. Let's list the files on the FTP server and download the most recent JSON file to a temporary directory. Credentials are stored in `env.txt`.
 
 ```{r message=FALSE, warning=FALSE}
 require(RCurl)
@@ -51,7 +51,7 @@ close(con)
 records <- fromJSON(lines, simplifyDataFrame = TRUE)$DEEPDATA
 ```
 
-## Generating Darwin Core archives
+## Generating Darwin Core data files
 
 We can now extract a list of distinct datasets from the data frame, and generate a Darwin Core archive for each dataset.
 
@@ -195,7 +195,7 @@ mof <- extract_mof(records)
 mof
 ```
 
-### Generating EML
+## Generating EML
 
 As the metadata records are all the same within a dataset, let's take the first and use that to populate the EML. Note that the EML template is read from `eml.xml`:
 
@@ -223,5 +223,60 @@ generate_eml <- function(df) {
 generate_eml(records_test)
 ```
 
+## Generating an archive descriptor file
+
+The archive also needs to include a `meta.xml` file which describes the files in the archive and their relationships.
+
+Let's first get a list of terms including their `qualName`.
+
+```{r message=FALSE, warning=FALSE}
+library(xml2)
+
+get_terms <- function(url) {
+  doc <- read_xml(url)
+  terms <- doc %>%
+    xml_ns_strip() %>%
+    xml_find_all(".//property") %>% 
+    map_df(function(x) {
+      list(
+        name = xml_attr(x, "name"),
+        qual = xml_attr(x, "qualName")
+      )
+    })
+}
+
+occurrence_terms <- get_terms("https://rs.gbif.org/core/dwc_occurrence_2020-07-15.xml")
+mof_terms <- get_terms("https://rs.gbif.org/extension/obis/extended_measurement_or_fact.xml")
+```
+
+Using these we can generate a list of terms to go into the `meta.xml` file for each table.
+
+```{r message=FALSE, warning=FALSE}
+generate_meta <- function(occ, mof) {
+  occurrence_fields <- tibble(name = names(occ)) %>%
+    left_join(occurrence_terms, by = "name") %>%
+    mutate(index = as.numeric(row.names(.)) - 1)
+  
+  occurrence_lines <- paste0("<field index=\"", occurrence_fields$index, "\" term=\"", occurrence_fields$qual, "\"/>")
+  occurrence_lines[1] <- "<id index=\"0\" />"
+  occurrence_lines <- paste0(occurrence_lines, collapse = "\n")
+
+  mof_fields <- tibble(name = names(mof)) %>%
+  left_join(mof_terms, by = "name") %>%
+  mutate(index = as.numeric(row.names(.)) - 1)
+
+  mof_lines <- paste0("<field index=\"", mof_fields$index, "\" term=\"", mof_fields$qual, "\"/>")
+  mof_lines[1] <- "<coreid index=\"0\" />"
+  mof_lines <- paste0(mof_lines, collapse = "\n")
+
+  meta <- read_file("meta.xml")
+  glue(meta)
+}
+
+generate_meta(occ, mof)
+```
+
 ## Bringing it all together
+
+
 
