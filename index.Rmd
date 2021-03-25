@@ -12,6 +12,8 @@ knit: (function(inputFile, encoding) {
 
 This notebook processes data from the [International Seabed Authority](https://www.isa.org.jm/) (ISA) [DeepData](https://data.isa.org.jm/isa/map/) database into Darwin Core archives.
 
+The code for this notebook is hosted at https://github.com/iobis/notebook-deepdata.
+
 ## Fetching the data from the ISA server
 
 The DeepData dataset is delivered to OBIS via FTP. Let's list the files on the FTP server and download the most recent JSON file to a temporary directory. Credentials are stored in `env.txt`.
