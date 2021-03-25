@@ -3203,77 +3203,81 @@ window.onload = function() {
 </div>
 <div id="cleaning-up-occurrence-data" class="section level3">
 <h3>Cleaning up occurrence data</h3>
+<p>First clean up any escaped newlines and fix <code>basisOfRecord</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="st">  </span><span class="kw">mutate_all</span>(<span class="cf">function</span>(x) { <span class="kw">gsub</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">n&quot;</span>, <span class="st">&quot;&quot;</span>, x) }) <span class="op">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">basisOfRecord =</span> <span class="st">&quot;HumanObservation&quot;</span>)</span></code></pre></div>
 <p>Let’s take a look at <code>scientificName</code> and <code>scientificNameID</code>.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>occ <span class="op">%&gt;%</span></span>
-<span id="cb8-2"><a href="#cb8-2"></a><span class="st">  </span><span class="kw">group_by</span>(scientificName) <span class="op">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">records =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(records)) <span class="op">%&gt;%</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a><span class="st">  </span>rmarkdown<span class="op">::</span><span class="kw">paged_table</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>occ <span class="op">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="st">  </span><span class="kw">group_by</span>(scientificName) <span class="op">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">records =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(records)) <span class="op">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="st">  </span>rmarkdown<span class="op">::</span><span class="kw">paged_table</span>()</span></code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["scientificName"],"name":[1],"type":["chr"],"align":["left"]},{"label":["records"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"","2":"568"},{"1":"Rimicaris exoculata","2":"342"},{"1":"à déterminer","2":"276"},{"1":"communautés microbiennes","2":"164"},{"1":"Total number of Bacteria (*10^8cells/L)","2":"41"},{"1":"Prochlorococcus (cells/mL)","2":"32"},{"1":"Harpaticoids","2":"29"},{"1":"Nematodes","2":"29"},{"1":"Eucaryotic picophytoplankton (cells/mL)","2":"22"},{"1":"Pseudorimula sp.","2":"21"},{"1":"Others","2":"16"},{"1":"Sarcomastigophorans","2":"16"},{"1":"Chorocaris chacei","2":"15"},{"1":"Mirocaris fortunata","2":"14"},{"1":"Thalassiothrix longissima Cleve et Grunow, 1880","2":"13"},{"1":"Alvinocaris markensis","2":"12"},{"1":"Peltospira sp.","2":"12"},{"1":"Synechococcus (cells/mL)","2":"12"},{"1":"Bathymodiolus puteoserpentis","2":"11"},{"1":"Macellicephaloides moustachu","2":"10"},{"1":"Noctiluca scintillans  (Macartney) Kofoid and Swezy, 1921","2":"10"},{"1":"Rhizosolenia alata f. alata Brightwell, 1858","2":"10"},{"1":"Archinome sp.","2":"9"},{"1":"Gossleriella tropica Schütt, 1892","2":"9"},{"1":"Trichodesmium hildebrandtii Gomont, 1982","2":"9"},{"1":"Bathypolaria","2":"8"},{"1":"Naplius","2":"8"},{"1":"Pseudosagitta Iyra","2":"8"},{"1":"Rhizosolenia alata f. gracillima (Cleve)  Grunow, 1882","2":"8"},{"1":"Segonzacia mesatlantica","2":"8"},{"1":"Ceratium carriense Gourret, 1883","2":"7"},{"1":"Ceratium fusus (Ehrenberg) Dujardin, 1841","2":"7"},{"1":"Chaetoceros atlanticus var. atlanticus Cleve, 1873","2":"7"},{"1":"Coscinodiscus sp. Ehrenberg, 1838","2":"7"},{"1":"Euchaeta acuta","2":"7"},{"1":"Gastropoda post larva","2":"7"},{"1":"Neocalanus gracilis","2":"7"},{"1":"Nullosetigera helgae","2":"7"},{"1":"Oncaea mediterranea","2":"7"},{"1":"Planktoniella formosa (Karsten) Qian et Wang, 1996","2":"7"},{"1":"Pleuromamma abdominalis","2":"7"},{"1":"Pleuromamma xiphias","2":"7"},{"1":"Rhizosolenia styliformis var. styliformois Brightwell, 1858","2":"7"},{"1":"Triconia conifera","2":"7"},{"1":"Acartia negligens","2":"6"},{"1":"Acartia sinjiensis","2":"6"},{"1":"Aidanosagítta septata","2":"6"},{"1":"Bathyfauvelia glacigena","2":"6"},{"1":"Ceratium pulchellum Gourret, 1906","2":"6"},{"1":"Clausocalanus farrani","2":"6"},{"1":"Ditylum brightwellii (T. West) Grunow, 1885","2":"6"},{"1":"Lucicutia flavicornis","2":"6"},{"1":"Oithona hamata","2":"6"},{"1":"Polychaeta larva","2":"6"},{"1":"Trichodesmium thiebautii","2":"6"},{"1":"Aidanosagítta neglecta","2":"5"},{"1":"Bathyfauvelia ignigena","2":"5"},{"1":"Ceratium contortum (Gourret) Cleve, 1900","2":"5"},{"1":"Ceratium longissimum Kofoid, 1907","2":"5"},{"1":"Ceratium macroceros Schrank, 1802","2":"5"},{"1":"Ceratium trichoceors (Ehrenberg) Kofoid, 1908","2":"5"},{"1":"Clausocalanus jobei","2":"5"},{"1":"Corycaeus dahli","2":"5"},{"1":"Hemiaulus hauckii Grunow in Van Heurck, 1882","2":"5"},{"1":"Oncaea media","2":"5"},{"1":"Paraeuchaeta russelli","2":"5"},{"1":"Pleuromamma gracilis","2":"5"},{"1":"Rhizosolenia bergonii Peragallo, 1892","2":"5"},{"1":"Rhizosolenia hyalina Ostenfeled et Schmidt, 1901","2":"5"},{"1":"Thalassiosira subtilis  (Ostenf.) Gran, 1900","2":"5"},{"1":"Triconia similis","2":"5"},{"1":"Abaciasagitta pulchra","2":"4"},{"1":"Amphisolenia bidentata Schröder, 1900","2":"4"},{"1":"Branchipolynoe seepensis","2":"4"},{"1":"Cerataulina bicornis Hasle in Hasle et Sims, 1985","2":"4"},{"1":"Ceratium extensum (Gourret) Cleve, 1900","2":"4"},{"1":"Ceratium massiliense (Gourret) Jörgensen, 1911","2":"4"},{"1":"Cladopyxis brachiolata","2":"4"},{"1":"Clausocalanus minor","2":"4"},{"1":"Dinophysis rotundatum","2":"4"},{"1":"Dinophysis schüttii Murray et Whitting, 1899","2":"4"},{"1":"Euphausia brevis","2":"4"},{"1":"Fish larva","2":"4"},{"1":"Gaetanus miles","2":"4"},{"1":"Heterorhabdus abyssalis","2":"4"},{"1":"Munidopsis exuta","2":"4"},{"1":"Obtusata antarctica","2":"4"},{"1":"Oncaea clevei","2":"4"},{"1":"Ornithocercus steinii Schütt, 1900","2":"4"},{"1":"Polychaetes","2":"4"},{"1":"Scolecithricella dentata","2":"4"},{"1":"Scrippsiella trochoidea Balech ex Loeblich III, 1965","2":"4"},{"1":"Serratosagitta bierii","2":"4"},{"1":"Aegisthus mucronatus","2":"3"},{"1":"Alvinocaris sp.","2":"3"},{"1":"Amallothoia arcuata","2":"3"},{"1":"Archiconchoecia striata","2":"3"},{"1":"Calocalanus pavoninus","2":"3"},{"1":"Ceratium euarcuatum Jörgensen, 1920","2":"3"},{"1":"Ceratium pentagonum Gourret, 1883","2":"3"},{"1":"Chaetoceros atlaticus var. neapolitana (Schröder) Hustedt 1930","2":"3"},{"1":"Cladopyxia brachiolata","2":"3"},{"1":"Corycaeus erythraeus","2":"3"},{"1":"Coscinodiscus centralis Ehrenberg, 1839","2":"3"},{"1":"Dictyocha fibula Ehrenberg, 1839","2":"3"},{"1":"Distephanus speculum Ehrenberg, 1839","2":"3"},{"1":"Euchaeta media","2":"3"},{"1":"Euphausia hanseni","2":"3"},{"1":"Euphausiacea larva","2":"3"},{"1":"Fragilaria sp. Lynbye, 1819","2":"3"},{"1":"Gaetanus minor","2":"3"},{"1":"Halalaimus","2":"3"},{"1":"Halocypria globosa","2":"3"},{"1":"Hemidiscus cuneiformis var. cuneiformis Wallich, 1860","2":"3"},{"1":"Hyalocylix striata","2":"3"},{"1":"Lepidonotopodium sp.","2":"3"},{"1":"Lophothrix latipes","2":"3"},{"1":"Lucicutia curta","2":"3"},{"1":"Lucicutia gaussae","2":"3"},{"1":"Mecynocera clausi","2":"3"},{"1":"Mesocalanus tenuicornis","2":"3"},{"1":"Metridia brevicauda","2":"3"},{"1":"Nannocalanus minor","2":"3"},{"1":"Oikopleura dioica","2":"3"},{"1":"Oithona fallax","2":"3"},{"1":"Ornithocercus  magnificusStein, 1883","2":"3"},{"1":"Paraconchoecia procera","2":"3"},{"1":"Paraeuchaeta tuberculata","2":"3"},{"1":"Podolampas spinifera Okamura, 1912","2":"3"},{"1":"Polaruschakov lamellae","2":"3"},{"1":"praestans Bussau, 1993","2":"3"},{"1":"Pseudo-nitzschia pungens Grunow ex PT Cleve, 1993","2":"3"},{"1":"Scolecithricella abyssalis","2":"3"},{"1":"Scolecithricella nicobarica","2":"3"},{"1":"Sutilizona sp.","2":"3"},{"1":"Thalassionema frauenfeldii  (Grunow) Hallegraeff, 1910","2":"3"},{"1":"Thysanoessa vicina","2":"3"},{"1":"Trachyneis aspera","2":"3"},{"1":"Triconia dentipes","2":"3"},{"1":"Unknown microflagellate","2":"3"},{"1":"Acartia clausi","2":"2"},{"1":"Acartia danae","2":"2"},{"1":"Acartia erythraea","2":"2"},{"1":"Actinoptychus hexagonus Grunow, 1874","2":"2"},{"1":"Aetídeus bradyi","2":"2"},{"1":"Amphidinium sp.","2":"2"},{"1":"Archiconchoecia versicula","2":"2"},{"1":"Asteromphalus heptactis (Brébisson) Ralfs, 1861","2":"2"},{"1":"Astrochlamys bruneus","2":"2"},{"1":"Bathyeliasona mariaae","2":"2"},{"1":"Biddulphia sinensis (Greville) Grunow, 1884","2":"2"},{"1":"Bradyidius armatus","2":"2"},{"1":"Calocalanus contractus","2":"2"},{"1":"Calocalanus pavo","2":"2"},{"1":"Calocalanus plumulosus","2":"2"},{"1":"Candelabrum sp.","2":"2"},{"1":"Ceratium candelabrum (Ehrenberg) Stein, 1883","2":"2"},{"1":"Ceratium contrarium (Gourret) Pavillard, 1905","2":"2"},{"1":"Ceratium horridum v.patentissimum","2":"2"},{"1":"Ceratium karstenii Pavillard, 1907","2":"2"},{"1":"Ceratium setaceum","2":"2"},{"1":"Ceratium tripos","2":"2"},{"1":"Chaetoceros lorenzianus Grunow, 1863","2":"2"},{"1":"Chaetoceros pelagicus Cleve, 1873","2":"2"},{"1":"Chaetoceros pseudodichaeta Ikari","2":"2"},{"1":"Chelophyes appendiculata","2":"2"},{"1":"Clausocalanus lividus","2":"2"},{"1":"Clytemnestra scutellata","2":"2"},{"1":"Conchoecia magna","2":"2"},{"1":"Corycaeus (Urocorycaeus) furcífer","2":"2"},{"1":"Corycaeus limbatus","2":"2"},{"1":"Coscinodiscus lineatus Ehrenberg, 1840","2":"2"},{"1":"Cosmocalanus darwinii","2":"2"},{"1":"Dinophysis oviformis","2":"2"},{"1":"Dinophysis sp.","2":"2"},{"1":"Euaugaptilus marginatus","2":"2"},{"1":"Eucalanus elongatus","2":"2"},{"1":"Euchaeta indica","2":"2"},{"1":"Eudoxoides mitra","2":"2"},{"1":"Eudoxoides spiralis(Bigelow)","2":"2"},{"1":"Euphausia distinguenda","2":"2"},{"1":"Euphausia sp.","2":"2"},{"1":"Ferosagitta ferox","2":"2"},{"1":"Gaetanus sp.","2":"2"},{"1":"Gonyaulax sp.","2":"2"},{"1":"Gyrodinium sp.","2":"2"},{"1":"Gyrodinium spirale (Bergh) Kofoid & Swezy, 1921","2":"2"},{"1":"Haloptilus fertilis","2":"2"},{"1":"Haloptilus longicirrus","2":"2"},{"1":"Haloptilus oxycephalus","2":"2"},{"1":"Hemiaulus cuneiformis","2":"2"},{"1":"Hodor anduril","2":"2"},{"1":"Hyalonema sp.","2":"2"},{"1":"Karenia mikimotoi Miyake & Kominami ex Oda, 1935","2":"2"},{"1":"Keratoisis sp.","2":"2"},{"1":"Leptocylindrus danicus","2":"2"},{"1":"Lucicutia clausi","2":"2"},{"1":"Lucícutia longíserrata","2":"2"},{"1":"Lucicutia ovalis","2":"2"},{"1":"Mesosagitta decipiens","2":"2"},{"1":"Microconchoecia echinulata","2":"2"},{"1":"Nematoscelis atlantica","2":"2"},{"1":"oblongus Bussau, 1993","2":"2"},{"1":"Oikopleura intermedia","2":"2"},{"1":"Oithona longispina","2":"2"},{"1":"Oncaea ornata","2":"2"},{"1":"Oncaea paraclevei","2":"2"},{"1":"Oncaea scottodicarloi","2":"2"},{"1":"Oncaea venusta","2":"2"},{"1":"Ophioctenella acies","2":"2"},{"1":"Ornithocercus quadratus var quadratus Schütt, 1900","2":"2"},{"1":"Ornithocercus splendidus Schütt, 1893","2":"2"},{"1":"Paraeuchaeta malayensís","2":"2"},{"1":"Paralicella","2":"2"},{"1":"Phalacroma ovum","2":"2"},{"1":"Planktoniella sol (Schiitt) Qian et Wang, 1996","2":"2"},{"1":"Pleuromamma robusta","2":"2"},{"1":"Polaruschakov omnesae","2":"2"},{"1":"Prorocentrum mexicanum","2":"2"},{"1":"Prorocentrum minninum (Pavillard) Schiller, 1933","2":"2"},{"1":"Protoperidinium pellucidum","2":"2"},{"1":"Protoperidinium sp.","2":"2"},{"1":"Rhincalanus nasutus","2":"2"},{"1":"Schröderella delicatula Pavillard, 1913","2":"2"},{"1":"Scolecithricella tenuiserrata","2":"2"},{"1":"Scolecithricella vittata","2":"2"},{"1":"Scotfocalanus farraní","2":"2"},{"1":"Solidosagitta zetesios","2":"2"},{"1":"Subeucalanus mucronatus","2":"2"},{"1":"Thalassionema nitzschioides  Grunow, 1862","2":"2"},{"1":"Thalassiosira sp.","2":"2"},{"1":"Thysanoessa longicaudata","2":"2"},{"1":"Triceratium affine Grunow, 1881","2":"2"},{"1":"Umbellula sp.","2":"2"},{"1":"Undeuchaeta major","2":"2"},{"1":"Vanadis sp.","2":"2"},{"1":"Vibilia armata","2":"2"},{"1":"Abyssorchomene","2":"1"},{"1":"Acartia clausi","2":"1"},{"1":"Acartia hongi","2":"1"},{"1":"Acartia tsuensis","2":"1"},{"1":"Actinoscyphia sp.","2":"1"},{"1":"Aetideus giesbrechti","2":"1"},{"1":"Alexandrium sp.","2":"1"},{"1":"Amallothoia gracilis","2":"1"},{"1":"Amphisolenia thrinax","2":"1"},{"1":"Arietellus setosus","2":"1"},{"1":"Aspidoscopulia","2":"1"},{"1":"Aspidoscopulia sp.","2":"1"},{"1":"Asterolampra vanheurckii Brun, 1891","2":"1"},{"1":"Asteromphalus flabellatus (Breb.) Greville, 1895","2":"1"},{"1":"Asteromphalus rubustus Castracane, 1875","2":"1"},{"1":"Augaptilus longicaudatus","2":"1"},{"1":"Azpeitia sp. M.Peragallo, 1912","2":"1"},{"1":"Bathyedithia retierei","2":"1"},{"1":"Blepharocysta sp.","2":"1"},{"1":"Brama orcini","2":"1"},{"1":"Bruunilla","2":"1"},{"1":"Calanus jashnovi","2":"1"},{"1":"Calocalanus gracilis","2":"1"},{"1":"Caloneis permagna","2":"1"},{"1":"Calyptrophora sp.","2":"1"},{"1":"Candacia curta","2":"1"},{"1":"Candacia varicans","2":"1"},{"1":"Ceratium arcticum","2":"1"},{"1":"Ceratium breve (Ost. et Schmidt) Schröder, 1906","2":"1"},{"1":"Ceratium buceros  Zacharias, 1906","2":"1"},{"1":"Ceratium gravidum Gourret, 1883","2":"1"},{"1":"Ceratium hexacamthum var. contortum","2":"1"},{"1":"Ceratium horridum (Cleve) Gran, 1902","2":"1"},{"1":"Ceratium horridum var. claviger","2":"1"},{"1":"Ceratium inflatum","2":"1"},{"1":"Ceratium kofoidii Jorgensen, 1911","2":"1"},{"1":"Ceratium lineatum (Ehrenberg) Cleve, 1899","2":"1"},{"1":"Ceratium lunula (Schimper ex Karsten) Jörgensen, 1911","2":"1"},{"1":"Ceratium macroceros var. gallicum (Kofoid) Peters, 1934","2":"1"},{"1":"Ceratium molle Kofoid, 1907","2":"1"},{"1":"Ceratium sp.","2":"1"},{"1":"Ceratocorys bipes","2":"1"},{"1":"Chaetoceros affinis var. affinis Lauder, 1864","2":"1"},{"1":"Chaetoceros affinis var. willei","2":"1"},{"1":"Chaetoceros anastomosans","2":"1"},{"1":"Chaetoceros compressum Lauder, 1864","2":"1"},{"1":"Chaetoceros danicus Cleve, 1889","2":"1"},{"1":"Chaetoceros decipiens f. singularis Gran, 1904","2":"1"},{"1":"Chaetoceros dichaeta","2":"1"},{"1":"Chaetoceros didymus var. anglica (Grunow). Gran, 1905","2":"1"},{"1":"Chaetoceros didymus var.protuberans","2":"1"},{"1":"Chaetoceros laciniosus Schuett, 1895","2":"1"},{"1":"Chaetoceros mitra","2":"1"},{"1":"Chaetoceros pendulus Karsten, 1905","2":"1"},{"1":"Chaetoceros pseudoaurivillii J. Ikari,","2":"1"},{"1":"Chaetoceros pseudocurvisetus Mangin, 1910","2":"1"},{"1":"Chaetoceros socialis Lauder 1864","2":"1"},{"1":"Chrysogorgia sp.","2":"1"},{"1":"Clausocalanus furcatus","2":"1"},{"1":"Clausocalanus laticeps","2":"1"},{"1":"Climacodium biconcavum Cleve, 1897","2":"1"},{"1":"Cochlodinium sp.","2":"1"},{"1":"Conchoecia magna rhombica","2":"1"},{"1":"Conchoecia subarcuata","2":"1"},{"1":"Conchoecissa ametra","2":"1"},{"1":"Conchoecissa imbricata","2":"1"},{"1":"Corallium sp.","2":"1"},{"1":"Corbitellinae sp.","2":"1"},{"1":"Corethron hystrix","2":"1"},{"1":"Corycaeus (Agetus) flaccus","2":"1"},{"1":"Corycaeus typicus","2":"1"},{"1":"Coscinodiscus argus","2":"1"},{"1":"Coscinodiscus excentricus Ehrenberg, 1840","2":"1"},{"1":"Coscinodiscus gigas","2":"1"},{"1":"Coscinodiscus nodulifer Schmidt, 1878","2":"1"},{"1":"Coscinodiscus radiatus Ehrenberg, 1841","2":"1"},{"1":"Cyclotella striata var striata (Kuetz.) Grunow, 1880","2":"1"},{"1":"Dictyaulus sp.","2":"1"},{"1":"Dimophyes arctica","2":"1"},{"1":"Dinophysis acuta","2":"1"},{"1":"Dinophysis argus (Stein) Abe, 1967","2":"1"},{"1":"Dinophysis bastata","2":"1"},{"1":"Dinophysis caudata","2":"1"},{"1":"Dinophysis elongata","2":"1"},{"1":"Dinophysis parvula","2":"1"},{"1":"Dinophysis porosa","2":"1"},{"1":"Diphyes bojani","2":"1"},{"1":"Diphyes dispar","2":"1"},{"1":"Diplopsalis asymmetrica","2":"1"},{"1":"Discoconchoecia elegans","2":"1"},{"1":"Disconchoecia tamensis","2":"1"},{"1":"Doliolum denticulatum","2":"1"},{"1":"Doliolum nationalis","2":"1"},{"1":"Doliolum nationalis","2":"1"},{"1":"egregius Bussau, 1993","2":"1"},{"1":"Eiconaxius sp.","2":"1"},{"1":"Euaugaptilus facilis","2":"1"},{"1":"Euaugaptilus longimanus","2":"1"},{"1":"Euaugaptilus magnus","2":"1"},{"1":"Euaugaptius nodifrons","2":"1"},{"1":"Eucalanus hyalinus","2":"1"},{"1":"Eucampia cornuta (Cleve) Grunow 1881","2":"1"},{"1":"Euchaeta plana","2":"1"},{"1":"Euchaeta rimana","2":"1"},{"1":"Euchaeta tenuis","2":"1"},{"1":"Euchaeta tenuis Esterly","2":"1"},{"1":"Euchírella bella","2":"1"},{"1":"Euconchoecia chierchiae","2":"1"},{"1":"Eukrohnia fowleri","2":"1"},{"1":"Euphausia americana","2":"1"},{"1":"Euphausia eximia","2":"1"},{"1":"Euphausia krohni","2":"1"},{"1":"Euphausia longirostris","2":"1"},{"1":"Euphausia mutica","2":"1"},{"1":"Euphausia recurva","2":"1"},{"1":"Euphausia sibogae","2":"1"},{"1":"Eurythenes","2":"1"},{"1":"Euterpina acutifrons","2":"1"},{"1":"Farranula rostrata","2":"1"},{"1":"Ferosagitta robusta","2":"1"},{"1":"Fish egg","2":"1"},{"1":"Flaccisagitta enflata","2":"1"},{"1":"Flaccisagitta hexaptera","2":"1"},{"1":"Freyella","2":"1"},{"1":"Gaetanus pileatus","2":"1"},{"1":"Gastrotrichs","2":"1"},{"1":"Goniaster","2":"1"},{"1":"Goniopsyllus rostratus","2":"1"},{"1":"Halacaroideans","2":"1"},{"1":"Haloptifus spinceps","2":"1"},{"1":"Haloptilus ornatus","2":"1"},{"1":"Heterocapsa triquetra","2":"1"},{"1":"Heteropyramis maculata","2":"1"},{"1":"Heterorhabdus sp.","2":"1"},{"1":"Heterorhabdus spinifrons","2":"1"},{"1":"Heterorhabdus subspinifrons","2":"1"},{"1":"Heterorhabdus tuberculus","2":"1"},{"1":"Heterosigma akashiwo","2":"1"},{"1":"Hodor hodor","2":"1"},{"1":"Hterosigma akashiwo","2":"1"},{"1":"Ihlea magalhanica","2":"1"},{"1":"Imantonia rotunda","2":"1"},{"1":"Isidella sp.","2":"1"},{"1":"Johannesbaptistia pellucida","2":"1"},{"1":"Kinorhynchs","2":"1"},{"1":"Lensia cordata","2":"1"},{"1":"Lensia leloupi","2":"1"},{"1":"Lensia lelouveteau","2":"1"},{"1":"Lensia multicristata","2":"1"},{"1":"Leptocylindrus mediterraneus (H. Peragallo) Hasle, 1975","2":"1"},{"1":"Lingulodinium polyedrum","2":"1"},{"1":"longinquus Bussau, 1993","2":"1"},{"1":"Lopadorhynchus krohnii","2":"1"},{"1":"Lopadorhynchus sp.","2":"1"},{"1":"Loricoecia loricata","2":"1"},{"1":"Lucicutia magna","2":"1"},{"1":"Lucicutia tenuicauda","2":"1"},{"1":"Macrosetella gracilis","2":"1"},{"1":"Mastogloia cribrosa","2":"1"},{"1":"Mastogloia paradoxa","2":"1"},{"1":"Megacalanus longicornis","2":"1"},{"1":"Mesosagitta neodecipiens","2":"1"},{"1":"Metaconchoecia isocheira","2":"1"},{"1":"Metaconchoecia kyrtophora","2":"1"},{"1":"Metaconchoecia rotundata","2":"1"},{"1":"Metallogorgia sp.","2":"1"},{"1":"Metridia curticauda","2":"1"},{"1":"Metridia princeps","2":"1"},{"1":"Microconchoecia acuticosta","2":"1"},{"1":"Microconchoecia curta","2":"1"},{"1":"Mollusca larva","2":"1"},{"1":"Muggiaea havock","2":"1"},{"1":"Navicula cryptocephaloides","2":"1"},{"1":"Navicula mollis","2":"1"},{"1":"Navicula pavillardi Hustedt 1939","2":"1"},{"1":"Navicula rhynchocephala","2":"1"},{"1":"Navicula sp. Bory, 1822","2":"1"},{"1":"Nematobrachion sexspinosum","2":"1"},{"1":"Nematoscelis difficilis","2":"1"},{"1":"Nematoscelis megalops","2":"1"},{"1":"Neocalanus robustior","2":"1"},{"1":"Nitzschia amphibia","2":"1"},{"1":"Nitzschia denticula","2":"1"},{"1":"Nitzschia marine","2":"1"},{"1":"Nitzschia sp. Hassall, 1845","2":"1"},{"1":"Nu aakhu","2":"1"},{"1":"Nullosetigera aequalis","2":"1"},{"1":"Oithona atlantica","2":"1"},{"1":"Oithona brevicomis","2":"1"},{"1":"Oithona decipiens","2":"1"},{"1":"Oithona plumifera","2":"1"},{"1":"Oithona sp","2":"1"},{"1":"Oithona tenuis","2":"1"},{"1":"Onchocalanus crístatus","2":"1"},{"1":"Orthoconchoecia bispinosa","2":"1"},{"1":"Ostracods","2":"1"},{"1":"Oxyphysis sp.","2":"1"},{"1":"Oxytoxum scolopax Stein, 1883","2":"1"},{"1":"Paracalanus aculeatus","2":"1"},{"1":"Paracandacia worthingtoni","2":"1"},{"1":"Paraeuchaeta rubra","2":"1"},{"1":"Paraeuchaeta sp.","2":"1"},{"1":"Paraeuchaeta vorax","2":"1"},{"1":"Paraeuchaeta weberi","2":"1"},{"1":"Paraheterorhabdus compactus","2":"1"},{"1":"Paraphronima crassipes","2":"1"},{"1":"Paraphronima sp.","2":"1"},{"1":"Pareucalanus langae","2":"1"},{"1":"Pedinosoma curlum","2":"1"},{"1":"Pelagobia longicirrata","2":"1"},{"1":"Peridinium achromaticum","2":"1"},{"1":"Peridinium crassipes","2":"1"},{"1":"Peridinium depressum","2":"1"},{"1":"Peridinium elegans","2":"1"},{"1":"Peridinium globulus Stein, 1883","2":"1"},{"1":"Peridinium oceanicum","2":"1"},{"1":"Peridinium punctulatum","2":"1"},{"1":"Peridinium steinii Jorgensen, 1908","2":"1"},{"1":"Phalacrophorus pictus","2":"1"},{"1":"Phronimella elongata","2":"1"},{"1":"Pinnularia sp. Ehrenbreg, 1840","2":"1"},{"1":"Plagiogramma antillarum Clevef, 1978","2":"1"},{"1":"Planktoniella sp.","2":"1"},{"1":"Platyscelus serratulus","2":"1"},{"1":"Pleuromamma quadrungulata","2":"1"},{"1":"Podolampas elegans Schütt, 1895","2":"1"},{"1":"Podolampas palmipes Stein, 1883","2":"1"},{"1":"Polaruschakov limaae","2":"1"},{"1":"Poliopogon sp.","2":"1"},{"1":"Polykrikos schwartzii","2":"1"},{"1":"Porroecia spinirostris","2":"1"},{"1":"Primno sp.","2":"1"},{"1":"Prorocentrum donghaiense","2":"1"},{"1":"Prorocentrum micans Ehrenberg, 1833","2":"1"},{"1":"Prorocentrum sp.","2":"1"},{"1":"Protolira sp.","2":"1"},{"1":"Protoperidinium pacifcum","2":"1"},{"1":"Protoperidinium subpyriforme","2":"1"},{"1":"Pseudo-nitzschia delicatissima Heiden, 1928","2":"1"},{"1":"Pseudosolenia calcar-avis  (Schultze) Sundström, 1986","2":"1"},{"1":"Pyrocystis lanceolata Schröder, 1900","2":"1"},{"1":"Pyrocystis lunula","2":"1"},{"1":"Rhizosolenia acuminata","2":"1"},{"1":"Rhizosolenia alata f. curvirostris","2":"1"},{"1":"Rhizosolenia alata f. indica (Peragallo) Ostenfeld, 1901","2":"1"},{"1":"Rhizosolenia castracanci Peragallo, 1888","2":"1"},{"1":"Rhizosolenia hebetata (Hansen) Gran, 1905","2":"1"},{"1":"Rhizosolenia hebetata f. semispina(Hensen)Gran, 1904","2":"1"},{"1":"Rhizosolenia imbricata (Cleve) Schroder, 1858","2":"1"},{"1":"Rhizosolenia sp.","2":"1"},{"1":"Saccocalyx sp.","2":"1"},{"1":"Scaphocalanus brevicornis","2":"1"},{"1":"Scolecithricella globulosa","2":"1"},{"1":"Scolecithricella longispinosa","2":"1"},{"1":"Scolecithricella minor","2":"1"},{"1":"Scolecithrichopsis ctenopus","2":"1"},{"1":"Scotfocalanus terranovae","2":"1"},{"1":"Scrippsiella sp.","2":"1"},{"1":"Serratosagitta tasmasnica","2":"1"},{"1":"Shinkailepas sp.","2":"1"},{"1":"Skeletonema sp.","2":"1"},{"1":"Spongicoloides sp.","2":"1"},{"1":"Stylocheiron abbreviatum","2":"1"},{"1":"Stylocheiron carinatum","2":"1"},{"1":"Subeucalanus mucronatus","2":"1"},{"1":"Synedra gaillonii","2":"1"},{"1":"Synedra sp. Ehrenberg, 1830","2":"1"},{"1":"Synura petersenii","2":"1"},{"1":"Tabularia  tabulata","2":"1"},{"1":"Tardigrades","2":"1"},{"1":"Thalassionema bacillare","2":"1"},{"1":"Theristus sp.","2":"1"},{"1":"Thysanoessa gregaria","2":"1"},{"1":"Thysanoessa inermis","2":"1"},{"1":"Thysanoessa macrura","2":"1"},{"1":"Thysanoessa parva","2":"1"},{"1":"Thysanoessa raschi","2":"1"},{"1":"Tomopteris elegans","2":"1"},{"1":"Tomopteris helgolandica","2":"1"},{"1":"Tomopteris sp.","2":"1"},{"1":"Travisiopsis dubia","2":"1"},{"1":"Travisiopsis lobifera","2":"1"},{"1":"Triceratium favus Ehrenberg,","2":"1"},{"1":"Triconia minuta","2":"1"},{"1":"Undeuchaeta intermedia","2":"1"},{"1":"Undinula vulgaris","2":"1"},{"1":"Undinula vulgaris","2":"1"},{"1":"violaceus","2":"1"},{"1":"Vogtia glabra","2":"1"},{"1":"vulgaris","2":"1"},{"1":"weberi","2":"1"},{"1":"Yodanoe","2":"1"},{"1":"Yodanoe desbruyeresi","2":"1"},{"1":"zonaria","2":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>occ <span class="op">%&gt;%</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a><span class="st">  </span><span class="kw">group_by</span>(scientificNameID) <span class="op">%&gt;%</span></span>
-<span id="cb9-3"><a href="#cb9-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">records =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(records)) <span class="op">%&gt;%</span></span>
-<span id="cb9-5"><a href="#cb9-5"></a><span class="st">  </span>rmarkdown<span class="op">::</span><span class="kw">paged_table</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>occ <span class="op">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="st">  </span><span class="kw">group_by</span>(scientificNameID) <span class="op">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">records =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(records)) <span class="op">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a><span class="st">  </span>rmarkdown<span class="op">::</span><span class="kw">paged_table</span>()</span></code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["scientificNameID"],"name":[1],"type":["chr"],"align":["left"]},{"label":["records"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"","2":"2173"},{"1":"?????","2":"206"},{"1":"??????","2":"120"},{"1":"????","2":"56"},{"1":"???????","2":"47"},{"1":"???","2":"22"},{"1":"??","2":"13"},{"1":"1","2":"10"},{"1":"sp. 608","2":"5"},{"1":"Yoldiella sp (NHM_190)","2":"4"},{"1":"sp. 173","2":"3"},{"1":"Tethyida sp (NHM_003)","2":"3"},{"1":"????????","2":"2"},{"1":"Copepoda sp A","2":"2"},{"1":"Stephanoscyphus sp","2":"2"},{"1":"Vesicomya galatheae","2":"2"},{"1":"Aglaophamus sp A","2":"1"},{"1":"Amphioplus (Unioplus) cf. daleus","2":"1"},{"1":"Annelida sp indet","2":"1"},{"1":"Cirrophorus sp B","2":"1"},{"1":"Copepoda sp indet","2":"1"},{"1":"Diplomma sp A","2":"1"},{"1":"Flabelligena sp M","2":"1"},{"1":"Glycera sp A","2":"1"},{"1":"Halistemma sp A","2":"1"},{"1":"Isopoda sp indet","2":"1"},{"1":"Leptochiton sp (NHM_446)","2":"1"},{"1":"Ophiomusium cf glabrum","2":"1"},{"1":"Ophiuroidea incertae sedis sp. (NHM_041)","2":"1"},{"1":"Ophiuroidea sp indet","2":"1"},{"1":"Oxygyrus sp indet","2":"1"},{"1":"Pelagodiscus cf. atlanticus (dead shell)","2":"1"},{"1":"Phyllochaetopterus sp A","2":"1"},{"1":"Phyllodocidae sp C","2":"1"},{"1":"Porcellanaster cf. ceruleus","2":"1"},{"1":"Porifera sp indet","2":"1"},{"1":"Porifera sp J","2":"1"},{"1":"Primnoidae gen nov sp A","2":"1"},{"1":"Prionospio sp","2":"1"},{"1":"Psychropotes cf. semperiana","2":"1"},{"1":"Scoloplos sp A","2":"1"},{"1":"Siphonodentalium sp A","2":"1"},{"1":"sp. 659-3","2":"1"},{"1":"sp. 692","2":"1"},{"1":"Spionidae sp indet","2":"1"},{"1":"Styracaster paucispinus","2":"1"},{"1":"Terebellidae sp D","2":"1"},{"1":"Travisia sp A","2":"1"},{"1":"Veleropilina oligotropha","2":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Note that in some cases <code>scientificName</code> only contains the species epithet, this is something that should be fixed at ISA. Let’s try to clean up the scientific names before we do taxon matching with WoRMS. Here I’m using the <code>gni_parse()</code> function from the <code>taxize</code> package, which connects to the <a href="http://gni.globalnames.org/">GNI</a> name parser. If a name cannot be parsed, I’m keeping the original.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="kw">library</span>(taxize)</span>
-<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">library</span>(purrr)</span>
-<span id="cb10-3"><a href="#cb10-3"></a></span>
-<span id="cb10-4"><a href="#cb10-4"></a>names &lt;-<span class="st"> </span><span class="kw">unique</span>(occ<span class="op">$</span>scientificName)</span>
-<span id="cb10-5"><a href="#cb10-5"></a>names &lt;-<span class="st"> </span>names[names <span class="op">!=</span><span class="st"> &quot;&quot;</span>]</span>
-<span id="cb10-6"><a href="#cb10-6"></a></span>
-<span id="cb10-7"><a href="#cb10-7"></a>clean_name &lt;-<span class="st"> </span><span class="cf">function</span>(name) {</span>
-<span id="cb10-8"><a href="#cb10-8"></a>  parsed &lt;-<span class="st"> </span><span class="kw">tryCatch</span>({</span>
-<span id="cb10-9"><a href="#cb10-9"></a>    res &lt;-<span class="st"> </span><span class="kw">gni_parse</span>(name)</span>
-<span id="cb10-10"><a href="#cb10-10"></a>    <span class="kw">stopifnot</span>(<span class="kw">nrow</span>(res) <span class="op">==</span><span class="st"> </span><span class="dv">1</span>)</span>
-<span id="cb10-11"><a href="#cb10-11"></a>    <span class="kw">return</span>(res<span class="op">$</span>canonical[<span class="dv">1</span>])</span>
-<span id="cb10-12"><a href="#cb10-12"></a>  },</span>
-<span id="cb10-13"><a href="#cb10-13"></a>  <span class="dt">error =</span> <span class="cf">function</span>(cond){</span>
-<span id="cb10-14"><a href="#cb10-14"></a>    <span class="kw">return</span>(name)</span>
-<span id="cb10-15"><a href="#cb10-15"></a>  })</span>
-<span id="cb10-16"><a href="#cb10-16"></a>}</span>
-<span id="cb10-17"><a href="#cb10-17"></a></span>
-<span id="cb10-18"><a href="#cb10-18"></a>names_clean &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names, clean_name))</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">library</span>(taxize)</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">library</span>(purrr)</span>
+<span id="cb11-3"><a href="#cb11-3"></a></span>
+<span id="cb11-4"><a href="#cb11-4"></a>names &lt;-<span class="st"> </span><span class="kw">unique</span>(occ<span class="op">$</span>scientificName)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>names &lt;-<span class="st"> </span>names[names <span class="op">!=</span><span class="st"> &quot;&quot;</span>]</span>
+<span id="cb11-6"><a href="#cb11-6"></a></span>
+<span id="cb11-7"><a href="#cb11-7"></a>clean_name &lt;-<span class="st"> </span><span class="cf">function</span>(name) {</span>
+<span id="cb11-8"><a href="#cb11-8"></a>  parsed &lt;-<span class="st"> </span><span class="kw">tryCatch</span>({</span>
+<span id="cb11-9"><a href="#cb11-9"></a>    res &lt;-<span class="st"> </span><span class="kw">gni_parse</span>(name)</span>
+<span id="cb11-10"><a href="#cb11-10"></a>    <span class="kw">stopifnot</span>(<span class="kw">nrow</span>(res) <span class="op">==</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb11-11"><a href="#cb11-11"></a>    <span class="kw">return</span>(res<span class="op">$</span>canonical[<span class="dv">1</span>])</span>
+<span id="cb11-12"><a href="#cb11-12"></a>  },</span>
+<span id="cb11-13"><a href="#cb11-13"></a>  <span class="dt">error =</span> <span class="cf">function</span>(cond){</span>
+<span id="cb11-14"><a href="#cb11-14"></a>    <span class="kw">return</span>(name)</span>
+<span id="cb11-15"><a href="#cb11-15"></a>  })</span>
+<span id="cb11-16"><a href="#cb11-16"></a>}</span>
+<span id="cb11-17"><a href="#cb11-17"></a></span>
+<span id="cb11-18"><a href="#cb11-18"></a>names_clean &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names, clean_name))</span></code></pre></div>
 <p>Now let’s try taxon matching using the cleaned names.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">library</span>(worrms)</span>
-<span id="cb11-2"><a href="#cb11-2"></a></span>
-<span id="cb11-3"><a href="#cb11-3"></a>match_name &lt;-<span class="st"> </span><span class="cf">function</span>(name) {</span>
-<span id="cb11-4"><a href="#cb11-4"></a>  lsid &lt;-<span class="st"> </span><span class="kw">tryCatch</span>({</span>
-<span id="cb11-5"><a href="#cb11-5"></a>    res &lt;-<span class="st"> </span><span class="kw">wm_records_names</span>(name)</span>
-<span id="cb11-6"><a href="#cb11-6"></a>    matches &lt;-<span class="st"> </span>res[[<span class="dv">1</span>]] <span class="op">%&gt;%</span></span>
-<span id="cb11-7"><a href="#cb11-7"></a><span class="st">      </span><span class="kw">filter</span>(match_type <span class="op">==</span><span class="st"> &quot;exact&quot;</span> <span class="op">|</span><span class="st"> </span>match_type <span class="op">==</span><span class="st"> &quot;exact_genus&quot;</span>)</span>
-<span id="cb11-8"><a href="#cb11-8"></a>    <span class="cf">if</span> (<span class="kw">nrow</span>(matches) <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) {</span>
-<span id="cb11-9"><a href="#cb11-9"></a>      <span class="kw">message</span>(<span class="kw">paste0</span>(<span class="st">&quot;Multiple exact matches for &quot;</span>, name))</span>
-<span id="cb11-10"><a href="#cb11-10"></a>    }</span>
-<span id="cb11-11"><a href="#cb11-11"></a>    <span class="kw">return</span>(matches<span class="op">$</span>lsid[<span class="dv">1</span>])</span>
-<span id="cb11-12"><a href="#cb11-12"></a>  }, <span class="dt">error =</span> <span class="cf">function</span>(cond) {</span>
-<span id="cb11-13"><a href="#cb11-13"></a>    <span class="kw">return</span>(<span class="ot">NA</span>)</span>
-<span id="cb11-14"><a href="#cb11-14"></a>  })</span>
-<span id="cb11-15"><a href="#cb11-15"></a>}</span>
-<span id="cb11-16"><a href="#cb11-16"></a></span>
-<span id="cb11-17"><a href="#cb11-17"></a>lsids &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names_clean, match_name))</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">library</span>(worrms)</span>
+<span id="cb12-2"><a href="#cb12-2"></a></span>
+<span id="cb12-3"><a href="#cb12-3"></a>match_name &lt;-<span class="st"> </span><span class="cf">function</span>(name) {</span>
+<span id="cb12-4"><a href="#cb12-4"></a>  lsid &lt;-<span class="st"> </span><span class="kw">tryCatch</span>({</span>
+<span id="cb12-5"><a href="#cb12-5"></a>    res &lt;-<span class="st"> </span><span class="kw">wm_records_names</span>(name)</span>
+<span id="cb12-6"><a href="#cb12-6"></a>    matches &lt;-<span class="st"> </span>res[[<span class="dv">1</span>]] <span class="op">%&gt;%</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a><span class="st">      </span><span class="kw">filter</span>(match_type <span class="op">==</span><span class="st"> &quot;exact&quot;</span> <span class="op">|</span><span class="st"> </span>match_type <span class="op">==</span><span class="st"> &quot;exact_genus&quot;</span>)</span>
+<span id="cb12-8"><a href="#cb12-8"></a>    <span class="cf">if</span> (<span class="kw">nrow</span>(matches) <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) {</span>
+<span id="cb12-9"><a href="#cb12-9"></a>      <span class="kw">message</span>(<span class="kw">paste0</span>(<span class="st">&quot;Multiple exact matches for &quot;</span>, name))</span>
+<span id="cb12-10"><a href="#cb12-10"></a>    }</span>
+<span id="cb12-11"><a href="#cb12-11"></a>    <span class="kw">return</span>(matches<span class="op">$</span>lsid[<span class="dv">1</span>])</span>
+<span id="cb12-12"><a href="#cb12-12"></a>  }, <span class="dt">error =</span> <span class="cf">function</span>(cond) {</span>
+<span id="cb12-13"><a href="#cb12-13"></a>    <span class="kw">return</span>(<span class="ot">NA</span>)</span>
+<span id="cb12-14"><a href="#cb12-14"></a>  })</span>
+<span id="cb12-15"><a href="#cb12-15"></a>}</span>
+<span id="cb12-16"><a href="#cb12-16"></a></span>
+<span id="cb12-17"><a href="#cb12-17"></a>lsids &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names_clean, match_name))</span></code></pre></div>
 <p>I’ll use the resulting LSIDs to replace the provided <code>scientificNameIDs</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>names &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">scientificName =</span> names, <span class="dt">lsid =</span> lsids)</span>
-<span id="cb12-2"><a href="#cb12-2"></a>occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span></span>
-<span id="cb12-3"><a href="#cb12-3"></a><span class="st">  </span><span class="kw">left_join</span>(names, <span class="dt">by =</span> <span class="st">&quot;scientificName&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb12-4"><a href="#cb12-4"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>scientificNameID) <span class="op">%&gt;%</span></span>
-<span id="cb12-5"><a href="#cb12-5"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">scientificNameID =</span> lsid)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>names &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">scientificName =</span> names, <span class="dt">lsid =</span> lsids)</span>
+<span id="cb13-2"><a href="#cb13-2"></a>occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="st">  </span><span class="kw">left_join</span>(names, <span class="dt">by =</span> <span class="st">&quot;scientificName&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>scientificNameID) <span class="op">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">scientificNameID =</span> lsid)</span></code></pre></div>
 <p>Let’s take another look at the top <code>scientificName</code> and <code>scientificNameID</code> after mathing:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>occ <span class="op">%&gt;%</span></span>
-<span id="cb13-2"><a href="#cb13-2"></a><span class="st">  </span><span class="kw">group_by</span>(scientificName, scientificNameID) <span class="op">%&gt;%</span></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">records =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></span>
-<span id="cb13-4"><a href="#cb13-4"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(records)) <span class="op">%&gt;%</span></span>
-<span id="cb13-5"><a href="#cb13-5"></a><span class="st">  </span><span class="kw">head</span>(<span class="dv">30</span>) <span class="op">%&gt;%</span></span>
-<span id="cb13-6"><a href="#cb13-6"></a><span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>occ <span class="op">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="st">  </span><span class="kw">group_by</span>(scientificName, scientificNameID) <span class="op">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">records =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(records)) <span class="op">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="st">  </span><span class="kw">head</span>(<span class="dv">30</span>) <span class="op">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>()</span></code></pre></div>
 <table>
 <colgroup>
 <col width="53%"></col>
@@ -3443,17 +3447,17 @@ window.onload = function() {
 </div>
 <div id="extracting-measurementorfact-data" class="section level3">
 <h3>Extracting MeasurementOrFact data</h3>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>extract_mof &lt;-<span class="st"> </span><span class="cf">function</span>(df) {</span>
-<span id="cb14-2"><a href="#cb14-2"></a>    df <span class="op">%&gt;%</span></span>
-<span id="cb14-3"><a href="#cb14-3"></a><span class="st">      </span><span class="kw">select</span>(<span class="st">&quot;id&quot;</span>, <span class="st">&quot;MeasurementOrFact&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb14-4"><a href="#cb14-4"></a><span class="st">      </span>jsonlite<span class="op">::</span><span class="kw">flatten</span>() <span class="op">%&gt;%</span></span>
-<span id="cb14-5"><a href="#cb14-5"></a><span class="st">      </span><span class="kw">rename_all</span>(<span class="op">~</span><span class="kw">str_replace</span>(., <span class="st">&quot;.*</span><span class="ch">\\</span><span class="st">.&quot;</span>, <span class="st">&quot;&quot;</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb14-6"><a href="#cb14-6"></a><span class="st">      </span><span class="kw">filter</span>(measurementType <span class="op">!=</span><span class="st"> &quot;&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb14-7"><a href="#cb14-7"></a><span class="st">      </span><span class="kw">as_tibble</span>()</span>
-<span id="cb14-8"><a href="#cb14-8"></a>}</span>
-<span id="cb14-9"><a href="#cb14-9"></a></span>
-<span id="cb14-10"><a href="#cb14-10"></a>mof &lt;-<span class="st"> </span><span class="kw">extract_mof</span>(records)</span>
-<span id="cb14-11"><a href="#cb14-11"></a>mof</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>extract_mof &lt;-<span class="st"> </span><span class="cf">function</span>(df) {</span>
+<span id="cb15-2"><a href="#cb15-2"></a>    df <span class="op">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="st">      </span><span class="kw">select</span>(<span class="st">&quot;id&quot;</span>, <span class="st">&quot;MeasurementOrFact&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="st">      </span>jsonlite<span class="op">::</span><span class="kw">flatten</span>() <span class="op">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="st">      </span><span class="kw">rename_all</span>(<span class="op">~</span><span class="kw">str_replace</span>(., <span class="st">&quot;.*</span><span class="ch">\\</span><span class="st">.&quot;</span>, <span class="st">&quot;&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6"></a><span class="st">      </span><span class="kw">filter</span>(measurementType <span class="op">!=</span><span class="st"> &quot;&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="st">      </span><span class="kw">as_tibble</span>()</span>
+<span id="cb15-8"><a href="#cb15-8"></a>}</span>
+<span id="cb15-9"><a href="#cb15-9"></a></span>
+<span id="cb15-10"><a href="#cb15-10"></a>mof &lt;-<span class="st"> </span><span class="kw">extract_mof</span>(records)</span>
+<span id="cb15-11"><a href="#cb15-11"></a>mof</span></code></pre></div>
 <pre><code>## # A tibble: 1,052 x 5
 ##    id           measurementID  measurementType  measurementValue measurementUnit
 ##    &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;            &lt;chr&gt;            &lt;chr&gt;          
@@ -3473,27 +3477,27 @@ window.onload = function() {
 <div id="generating-eml" class="section level2">
 <h2>Generating EML</h2>
 <p>As the metadata records are all the same within a dataset, let’s take the first and use that to populate the EML. Note that the EML template is read from <code>eml.xml</code>:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">library</span>(readr)</span>
-<span id="cb16-2"><a href="#cb16-2"></a><span class="kw">library</span>(glue)</span>
-<span id="cb16-3"><a href="#cb16-3"></a></span>
-<span id="cb16-4"><a href="#cb16-4"></a>generate_eml &lt;-<span class="st"> </span><span class="cf">function</span>(df) {</span>
-<span id="cb16-5"><a href="#cb16-5"></a>  eml &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;eml.xml&quot;</span>)</span>
-<span id="cb16-6"><a href="#cb16-6"></a>  metadata &lt;-<span class="st"> </span>df<span class="op">$</span>Metadata[<span class="dv">1</span>,]</span>
-<span id="cb16-7"><a href="#cb16-7"></a>  firstname &lt;-<span class="st"> </span><span class="kw">strsplit</span>(metadata<span class="op">$</span>Contact<span class="op">$</span>name, <span class="st">&quot; &quot;</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>]</span>
-<span id="cb16-8"><a href="#cb16-8"></a>  lastname &lt;-<span class="st"> </span><span class="kw">strsplit</span>(metadata<span class="op">$</span>Contact<span class="op">$</span>name, <span class="st">&quot; &quot;</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]</span>
-<span id="cb16-9"><a href="#cb16-9"></a>  organization &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>organisation</span>
-<span id="cb16-10"><a href="#cb16-10"></a>  email &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>email</span>
-<span id="cb16-11"><a href="#cb16-11"></a>  position &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>position</span>
-<span id="cb16-12"><a href="#cb16-12"></a>  abstract &lt;-<span class="st"> </span>metadata<span class="op">$</span>abstract</span>
-<span id="cb16-13"><a href="#cb16-13"></a>  title &lt;-<span class="st"> </span>metadata<span class="op">$</span>title</span>
-<span id="cb16-14"><a href="#cb16-14"></a>  citation &lt;-<span class="st"> </span>metadata<span class="op">$</span>citation</span>
-<span id="cb16-15"><a href="#cb16-15"></a>  packageid &lt;-<span class="st"> &quot;https://datasets.obis.org/deepdata&quot;</span></span>
-<span id="cb16-16"><a href="#cb16-16"></a>  pubdate &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%Y-%m-%d&quot;</span>)</span>
-<span id="cb16-17"><a href="#cb16-17"></a>  datestamp &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%Y-%m-%dT%H:%M:%S%z&quot;</span>)</span>
-<span id="cb16-18"><a href="#cb16-18"></a>  <span class="kw">glue</span>(eml)</span>
-<span id="cb16-19"><a href="#cb16-19"></a>}</span>
-<span id="cb16-20"><a href="#cb16-20"></a></span>
-<span id="cb16-21"><a href="#cb16-21"></a><span class="kw">generate_eml</span>(records_test)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">library</span>(readr)</span>
+<span id="cb17-2"><a href="#cb17-2"></a><span class="kw">library</span>(glue)</span>
+<span id="cb17-3"><a href="#cb17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4"></a>generate_eml &lt;-<span class="st"> </span><span class="cf">function</span>(df) {</span>
+<span id="cb17-5"><a href="#cb17-5"></a>  eml &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;eml.xml&quot;</span>)</span>
+<span id="cb17-6"><a href="#cb17-6"></a>  metadata &lt;-<span class="st"> </span>df<span class="op">$</span>Metadata[<span class="dv">1</span>,]</span>
+<span id="cb17-7"><a href="#cb17-7"></a>  firstname &lt;-<span class="st"> </span><span class="kw">strsplit</span>(metadata<span class="op">$</span>Contact<span class="op">$</span>name, <span class="st">&quot; &quot;</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>]</span>
+<span id="cb17-8"><a href="#cb17-8"></a>  lastname &lt;-<span class="st"> </span><span class="kw">strsplit</span>(metadata<span class="op">$</span>Contact<span class="op">$</span>name, <span class="st">&quot; &quot;</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]</span>
+<span id="cb17-9"><a href="#cb17-9"></a>  organization &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>organisation</span>
+<span id="cb17-10"><a href="#cb17-10"></a>  email &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>email</span>
+<span id="cb17-11"><a href="#cb17-11"></a>  position &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>position</span>
+<span id="cb17-12"><a href="#cb17-12"></a>  abstract &lt;-<span class="st"> </span>metadata<span class="op">$</span>abstract</span>
+<span id="cb17-13"><a href="#cb17-13"></a>  title &lt;-<span class="st"> </span>metadata<span class="op">$</span>title</span>
+<span id="cb17-14"><a href="#cb17-14"></a>  citation &lt;-<span class="st"> </span>metadata<span class="op">$</span>citation</span>
+<span id="cb17-15"><a href="#cb17-15"></a>  packageid &lt;-<span class="st"> &quot;https://datasets.obis.org/deepdata&quot;</span></span>
+<span id="cb17-16"><a href="#cb17-16"></a>  pubdate &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%Y-%m-%d&quot;</span>)</span>
+<span id="cb17-17"><a href="#cb17-17"></a>  datestamp &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%Y-%m-%dT%H:%M:%S%z&quot;</span>)</span>
+<span id="cb17-18"><a href="#cb17-18"></a>  <span class="kw">glue</span>(eml)</span>
+<span id="cb17-19"><a href="#cb17-19"></a>}</span>
+<span id="cb17-20"><a href="#cb17-20"></a></span>
+<span id="cb17-21"><a href="#cb17-21"></a><span class="kw">generate_eml</span>(records_test)</span></code></pre></div>
 <pre><code>## &lt;eml:eml xmlns:eml=&quot;eml://ecoinformatics.org/eml-2.1.1&quot;
 ##   xmlns:dc=&quot;http://purl.org/dc/terms/&quot;
 ##   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
@@ -3513,7 +3517,7 @@ window.onload = function() {
 ##     &lt;keywordThesaurus&gt;GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type.xml&lt;/keywordThesaurus&gt;
 ##   &lt;/keywordSet&gt;
 ##   &lt;intellectualRights&gt;
-##     &lt;para&gt;To the extent possible under law, the publisher has waived all rights to these data and has dedicated them to the &lt;ulink url=&quot;http://creativecommons.org/publicdomain/zero/1.0/legalcode&quot;&gt;&lt;citetitle&gt;Public Domain (CC0 1.0)&lt;/citetitle&gt;&lt;/ulink&gt;. Users may copy, modify, distribute and use the work, including for commercial purposes, without restriction.&lt;/para&gt;
+##     &lt;para&gt;This work is licensed under a &lt;ulink url=&quot;http://creativecommons.org/licenses/by/4.0/legalcode&quot;&gt;&lt;citetitle&gt;Creative Commons Attribution (CC-BY) 4.0 License&lt;/citetitle&gt;&lt;/ulink&gt;.&lt;/para&gt;
 ##   &lt;/intellectualRights&gt;
 ##   &lt;maintenance&gt;
 ##     &lt;description&gt;
@@ -3552,7 +3556,7 @@ window.onload = function() {
 ## &lt;additionalMetadata&gt;
 ## &lt;metadata&gt;
 ## &lt;gbif&gt;
-##   &lt;dateStamp&gt;2021-03-25T17:25:14+0100&lt;/dateStamp&gt;
+##   &lt;dateStamp&gt;2021-03-25T20:19:16+0100&lt;/dateStamp&gt;
 ##   &lt;hierarchyLevel&gt;dataset&lt;/hierarchyLevel&gt;
 ##   &lt;citation&gt;International Seabed Authority, DeepData&lt;/citation&gt;
 ## &lt;/gbif&gt;
@@ -3564,46 +3568,46 @@ window.onload = function() {
 <h2>Generating an archive descriptor file</h2>
 <p>The archive also needs to include a <code>meta.xml</code> file which describes the files in the archive and their relationships.</p>
 <p>Let’s first get a list of terms including their <code>qualName</code>.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">library</span>(xml2)</span>
-<span id="cb18-2"><a href="#cb18-2"></a></span>
-<span id="cb18-3"><a href="#cb18-3"></a>get_terms &lt;-<span class="st"> </span><span class="cf">function</span>(url) {</span>
-<span id="cb18-4"><a href="#cb18-4"></a>  doc &lt;-<span class="st"> </span><span class="kw">read_xml</span>(url)</span>
-<span id="cb18-5"><a href="#cb18-5"></a>  terms &lt;-<span class="st"> </span>doc <span class="op">%&gt;%</span></span>
-<span id="cb18-6"><a href="#cb18-6"></a><span class="st">    </span><span class="kw">xml_ns_strip</span>() <span class="op">%&gt;%</span></span>
-<span id="cb18-7"><a href="#cb18-7"></a><span class="st">    </span><span class="kw">xml_find_all</span>(<span class="st">&quot;.//property&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb18-8"><a href="#cb18-8"></a><span class="st">    </span><span class="kw">map_df</span>(<span class="cf">function</span>(x) {</span>
-<span id="cb18-9"><a href="#cb18-9"></a>      <span class="kw">list</span>(</span>
-<span id="cb18-10"><a href="#cb18-10"></a>        <span class="dt">name =</span> <span class="kw">xml_attr</span>(x, <span class="st">&quot;name&quot;</span>),</span>
-<span id="cb18-11"><a href="#cb18-11"></a>        <span class="dt">qual =</span> <span class="kw">xml_attr</span>(x, <span class="st">&quot;qualName&quot;</span>)</span>
-<span id="cb18-12"><a href="#cb18-12"></a>      )</span>
-<span id="cb18-13"><a href="#cb18-13"></a>    })</span>
-<span id="cb18-14"><a href="#cb18-14"></a>}</span>
-<span id="cb18-15"><a href="#cb18-15"></a></span>
-<span id="cb18-16"><a href="#cb18-16"></a>occurrence_terms &lt;-<span class="st"> </span><span class="kw">get_terms</span>(<span class="st">&quot;https://rs.gbif.org/core/dwc_occurrence_2020-07-15.xml&quot;</span>)</span>
-<span id="cb18-17"><a href="#cb18-17"></a>mof_terms &lt;-<span class="st"> </span><span class="kw">get_terms</span>(<span class="st">&quot;https://rs.gbif.org/extension/obis/extended_measurement_or_fact.xml&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">library</span>(xml2)</span>
+<span id="cb19-2"><a href="#cb19-2"></a></span>
+<span id="cb19-3"><a href="#cb19-3"></a>get_terms &lt;-<span class="st"> </span><span class="cf">function</span>(url) {</span>
+<span id="cb19-4"><a href="#cb19-4"></a>  doc &lt;-<span class="st"> </span><span class="kw">read_xml</span>(url)</span>
+<span id="cb19-5"><a href="#cb19-5"></a>  terms &lt;-<span class="st"> </span>doc <span class="op">%&gt;%</span></span>
+<span id="cb19-6"><a href="#cb19-6"></a><span class="st">    </span><span class="kw">xml_ns_strip</span>() <span class="op">%&gt;%</span></span>
+<span id="cb19-7"><a href="#cb19-7"></a><span class="st">    </span><span class="kw">xml_find_all</span>(<span class="st">&quot;.//property&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb19-8"><a href="#cb19-8"></a><span class="st">    </span><span class="kw">map_df</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb19-9"><a href="#cb19-9"></a>      <span class="kw">list</span>(</span>
+<span id="cb19-10"><a href="#cb19-10"></a>        <span class="dt">name =</span> <span class="kw">xml_attr</span>(x, <span class="st">&quot;name&quot;</span>),</span>
+<span id="cb19-11"><a href="#cb19-11"></a>        <span class="dt">qual =</span> <span class="kw">xml_attr</span>(x, <span class="st">&quot;qualName&quot;</span>)</span>
+<span id="cb19-12"><a href="#cb19-12"></a>      )</span>
+<span id="cb19-13"><a href="#cb19-13"></a>    })</span>
+<span id="cb19-14"><a href="#cb19-14"></a>}</span>
+<span id="cb19-15"><a href="#cb19-15"></a></span>
+<span id="cb19-16"><a href="#cb19-16"></a>occurrence_terms &lt;-<span class="st"> </span><span class="kw">get_terms</span>(<span class="st">&quot;https://rs.gbif.org/core/dwc_occurrence_2020-07-15.xml&quot;</span>)</span>
+<span id="cb19-17"><a href="#cb19-17"></a>mof_terms &lt;-<span class="st"> </span><span class="kw">get_terms</span>(<span class="st">&quot;https://rs.gbif.org/extension/obis/extended_measurement_or_fact.xml&quot;</span>)</span></code></pre></div>
 <p>Using these we can generate a list of terms to go into the <code>meta.xml</code> file for each table.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>generate_meta &lt;-<span class="st"> </span><span class="cf">function</span>(occ, mof) {</span>
-<span id="cb19-2"><a href="#cb19-2"></a>  occurrence_fields &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">name =</span> <span class="kw">names</span>(occ)) <span class="op">%&gt;%</span></span>
-<span id="cb19-3"><a href="#cb19-3"></a><span class="st">    </span><span class="kw">left_join</span>(occurrence_terms, <span class="dt">by =</span> <span class="st">&quot;name&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">index =</span> <span class="kw">as.numeric</span>(<span class="kw">row.names</span>(.)) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
-<span id="cb19-5"><a href="#cb19-5"></a>  </span>
-<span id="cb19-6"><a href="#cb19-6"></a>  occurrence_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;&lt;field index=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, occurrence_fields<span class="op">$</span>index, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st"> term=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, occurrence_fields<span class="op">$</span>qual, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">/&gt;&quot;</span>)</span>
-<span id="cb19-7"><a href="#cb19-7"></a>  occurrence_lines[<span class="dv">1</span>] &lt;-<span class="st"> &quot;&lt;id index=</span><span class="ch">\&quot;</span><span class="st">0</span><span class="ch">\&quot;</span><span class="st"> /&gt;&quot;</span></span>
-<span id="cb19-8"><a href="#cb19-8"></a>  occurrence_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(occurrence_lines, <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb19-9"><a href="#cb19-9"></a></span>
-<span id="cb19-10"><a href="#cb19-10"></a>  mof_fields &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">name =</span> <span class="kw">names</span>(mof)) <span class="op">%&gt;%</span></span>
-<span id="cb19-11"><a href="#cb19-11"></a><span class="st">  </span><span class="kw">left_join</span>(mof_terms, <span class="dt">by =</span> <span class="st">&quot;name&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb19-12"><a href="#cb19-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">index =</span> <span class="kw">as.numeric</span>(<span class="kw">row.names</span>(.)) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
-<span id="cb19-13"><a href="#cb19-13"></a></span>
-<span id="cb19-14"><a href="#cb19-14"></a>  mof_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;&lt;field index=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, mof_fields<span class="op">$</span>index, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st"> term=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, mof_fields<span class="op">$</span>qual, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">/&gt;&quot;</span>)</span>
-<span id="cb19-15"><a href="#cb19-15"></a>  mof_lines[<span class="dv">1</span>] &lt;-<span class="st"> &quot;&lt;coreid index=</span><span class="ch">\&quot;</span><span class="st">0</span><span class="ch">\&quot;</span><span class="st"> /&gt;&quot;</span></span>
-<span id="cb19-16"><a href="#cb19-16"></a>  mof_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(mof_lines, <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb19-17"><a href="#cb19-17"></a></span>
-<span id="cb19-18"><a href="#cb19-18"></a>  meta &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;meta.xml&quot;</span>)</span>
-<span id="cb19-19"><a href="#cb19-19"></a>  <span class="kw">glue</span>(meta)</span>
-<span id="cb19-20"><a href="#cb19-20"></a>}</span>
-<span id="cb19-21"><a href="#cb19-21"></a></span>
-<span id="cb19-22"><a href="#cb19-22"></a><span class="kw">generate_meta</span>(occ, mof)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>generate_meta &lt;-<span class="st"> </span><span class="cf">function</span>(occ, mof) {</span>
+<span id="cb20-2"><a href="#cb20-2"></a>  occurrence_fields &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">name =</span> <span class="kw">names</span>(occ)) <span class="op">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3"></a><span class="st">    </span><span class="kw">left_join</span>(occurrence_terms, <span class="dt">by =</span> <span class="st">&quot;name&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">index =</span> <span class="kw">as.numeric</span>(<span class="kw">row.names</span>(.)) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb20-5"><a href="#cb20-5"></a>  </span>
+<span id="cb20-6"><a href="#cb20-6"></a>  occurrence_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;&lt;field index=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, occurrence_fields<span class="op">$</span>index, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st"> term=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, occurrence_fields<span class="op">$</span>qual, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">/&gt;&quot;</span>)</span>
+<span id="cb20-7"><a href="#cb20-7"></a>  occurrence_lines[<span class="dv">1</span>] &lt;-<span class="st"> &quot;&lt;id index=</span><span class="ch">\&quot;</span><span class="st">0</span><span class="ch">\&quot;</span><span class="st"> /&gt;&quot;</span></span>
+<span id="cb20-8"><a href="#cb20-8"></a>  occurrence_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(occurrence_lines, <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb20-9"><a href="#cb20-9"></a></span>
+<span id="cb20-10"><a href="#cb20-10"></a>  mof_fields &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">name =</span> <span class="kw">names</span>(mof)) <span class="op">%&gt;%</span></span>
+<span id="cb20-11"><a href="#cb20-11"></a><span class="st">  </span><span class="kw">left_join</span>(mof_terms, <span class="dt">by =</span> <span class="st">&quot;name&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb20-12"><a href="#cb20-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">index =</span> <span class="kw">as.numeric</span>(<span class="kw">row.names</span>(.)) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb20-13"><a href="#cb20-13"></a></span>
+<span id="cb20-14"><a href="#cb20-14"></a>  mof_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;&lt;field index=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, mof_fields<span class="op">$</span>index, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st"> term=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, mof_fields<span class="op">$</span>qual, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">/&gt;&quot;</span>)</span>
+<span id="cb20-15"><a href="#cb20-15"></a>  mof_lines[<span class="dv">1</span>] &lt;-<span class="st"> &quot;&lt;coreid index=</span><span class="ch">\&quot;</span><span class="st">0</span><span class="ch">\&quot;</span><span class="st"> /&gt;&quot;</span></span>
+<span id="cb20-16"><a href="#cb20-16"></a>  mof_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(mof_lines, <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb20-17"><a href="#cb20-17"></a></span>
+<span id="cb20-18"><a href="#cb20-18"></a>  meta &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;meta.xml&quot;</span>)</span>
+<span id="cb20-19"><a href="#cb20-19"></a>  <span class="kw">glue</span>(meta)</span>
+<span id="cb20-20"><a href="#cb20-20"></a>}</span>
+<span id="cb20-21"><a href="#cb20-21"></a></span>
+<span id="cb20-22"><a href="#cb20-22"></a><span class="kw">generate_meta</span>(occ, mof)</span></code></pre></div>
 <pre><code>## &lt;archive xmlns=&quot;http://rs.tdwg.org/dwc/text/&quot; metadata=&quot;eml.xml&quot;&gt;
 ##   &lt;core encoding=&quot;UTF-8&quot; fieldsTerminatedBy=&quot;\t&quot; linesTerminatedBy=&quot;\n&quot; fieldsEnclosedBy=&quot;&quot; ignoreHeaderLines=&quot;1&quot; rowType=&quot;http://rs.tdwg.org/dwc/terms/Occurrence&quot;&gt;
 ##     &lt;files&gt;
@@ -3675,50 +3679,56 @@ window.onload = function() {
 </div>
 <div id="bringing-it-all-together" class="section level2">
 <h2>Bringing it all together</h2>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="cf">for</span> (title <span class="cf">in</span> titles) {</span>
-<span id="cb21-2"><a href="#cb21-2"></a></span>
-<span id="cb21-3"><a href="#cb21-3"></a>  dataset &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
-<span id="cb21-4"><a href="#cb21-4"></a><span class="st">    </span><span class="kw">filter</span>(Metadata<span class="op">$</span>title <span class="op">==</span><span class="st"> </span>title)</span>
-<span id="cb21-5"><a href="#cb21-5"></a></span>
-<span id="cb21-6"><a href="#cb21-6"></a>  <span class="co"># occurrence</span></span>
-<span id="cb21-7"><a href="#cb21-7"></a>    </span>
-<span id="cb21-8"><a href="#cb21-8"></a>  occ &lt;-<span class="st"> </span><span class="kw">extract_occurrences</span>(dataset)</span>
-<span id="cb21-9"><a href="#cb21-9"></a>  names &lt;-<span class="st"> </span><span class="kw">unique</span>(occ<span class="op">$</span>scientificName)</span>
-<span id="cb21-10"><a href="#cb21-10"></a>  names &lt;-<span class="st"> </span>names[names <span class="op">!=</span><span class="st"> &quot;&quot;</span>]</span>
-<span id="cb21-11"><a href="#cb21-11"></a>  names_clean &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names, clean_name))</span>
-<span id="cb21-12"><a href="#cb21-12"></a>  lsids &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names_clean, match_name))</span>
-<span id="cb21-13"><a href="#cb21-13"></a>  names &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">scientificName =</span> names, <span class="dt">lsid =</span> lsids)</span>
-<span id="cb21-14"><a href="#cb21-14"></a>  occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span></span>
-<span id="cb21-15"><a href="#cb21-15"></a><span class="st">    </span><span class="kw">left_join</span>(names, <span class="dt">by =</span> <span class="st">&quot;scientificName&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb21-16"><a href="#cb21-16"></a><span class="st">    </span><span class="kw">select</span>(<span class="op">-</span>scientificNameID) <span class="op">%&gt;%</span></span>
-<span id="cb21-17"><a href="#cb21-17"></a><span class="st">    </span><span class="kw">rename</span>(<span class="dt">scientificNameID =</span> lsid)</span>
-<span id="cb21-18"><a href="#cb21-18"></a>  </span>
-<span id="cb21-19"><a href="#cb21-19"></a>  <span class="co"># mof</span></span>
-<span id="cb21-20"><a href="#cb21-20"></a>  </span>
-<span id="cb21-21"><a href="#cb21-21"></a>  mof &lt;-<span class="st"> </span><span class="kw">extract_mof</span>(dataset)</span>
-<span id="cb21-22"><a href="#cb21-22"></a>  </span>
-<span id="cb21-23"><a href="#cb21-23"></a>  <span class="co"># EML</span></span>
-<span id="cb21-24"><a href="#cb21-24"></a>  </span>
-<span id="cb21-25"><a href="#cb21-25"></a>  eml &lt;-<span class="st"> </span><span class="kw">generate_eml</span>(dataset)</span>
-<span id="cb21-26"><a href="#cb21-26"></a>  </span>
-<span id="cb21-27"><a href="#cb21-27"></a>  <span class="co"># meta.xml</span></span>
-<span id="cb21-28"><a href="#cb21-28"></a>  </span>
-<span id="cb21-29"><a href="#cb21-29"></a>  meta &lt;-<span class="st"> </span><span class="kw">generate_meta</span>(occ, mof)</span>
-<span id="cb21-30"><a href="#cb21-30"></a>  </span>
-<span id="cb21-31"><a href="#cb21-31"></a>  <span class="co"># generate archive</span></span>
-<span id="cb21-32"><a href="#cb21-32"></a>  </span>
-<span id="cb21-33"><a href="#cb21-33"></a>  <span class="kw">write.table</span>(occ, <span class="dt">file =</span> <span class="st">&quot;occurrence.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>)</span>
-<span id="cb21-34"><a href="#cb21-34"></a>  <span class="kw">write.table</span>(mof, <span class="dt">file =</span> <span class="st">&quot;extendedmeasurementorfact.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>)</span>
-<span id="cb21-35"><a href="#cb21-35"></a>  <span class="kw">writeLines</span>(eml, <span class="st">&quot;eml.xml&quot;</span>)</span>
-<span id="cb21-36"><a href="#cb21-36"></a>  <span class="kw">writeLines</span>(meta, <span class="st">&quot;meta.xml&quot;</span>)</span>
-<span id="cb21-37"><a href="#cb21-37"></a>  </span>
-<span id="cb21-38"><a href="#cb21-38"></a>  files &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;occurrence.txt&quot;</span>, <span class="st">&quot;extendedmeasurementorfact.txt&quot;</span>, <span class="st">&quot;eml.xml&quot;</span>, <span class="st">&quot;meta.xml&quot;</span>)</span>
-<span id="cb21-39"><a href="#cb21-39"></a>  <span class="kw">zip</span>(<span class="kw">glue</span>(<span class="st">&quot;{title}.zip&quot;</span>), files)</span>
-<span id="cb21-40"><a href="#cb21-40"></a>  <span class="cf">for</span> (f <span class="cf">in</span> files) {</span>
-<span id="cb21-41"><a href="#cb21-41"></a>    <span class="kw">file.remove</span>(f)</span>
-<span id="cb21-42"><a href="#cb21-42"></a>  }</span>
-<span id="cb21-43"><a href="#cb21-43"></a></span>
-<span id="cb21-44"><a href="#cb21-44"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="cf">for</span> (title <span class="cf">in</span> titles) {</span>
+<span id="cb22-2"><a href="#cb22-2"></a></span>
+<span id="cb22-3"><a href="#cb22-3"></a>  dataset &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a><span class="st">    </span><span class="kw">filter</span>(Metadata<span class="op">$</span>title <span class="op">==</span><span class="st"> </span>title)</span>
+<span id="cb22-5"><a href="#cb22-5"></a></span>
+<span id="cb22-6"><a href="#cb22-6"></a>  <span class="co"># occurrence</span></span>
+<span id="cb22-7"><a href="#cb22-7"></a>    </span>
+<span id="cb22-8"><a href="#cb22-8"></a>  occ &lt;-<span class="st"> </span><span class="kw">extract_occurrences</span>(dataset)</span>
+<span id="cb22-9"><a href="#cb22-9"></a>  occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span></span>
+<span id="cb22-10"><a href="#cb22-10"></a><span class="st">    </span><span class="kw">mutate_all</span>(<span class="cf">function</span>(x) { <span class="kw">gsub</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">n&quot;</span>, <span class="st">&quot;&quot;</span>, x) }) <span class="op">%&gt;%</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">basisOfRecord =</span> <span class="st">&quot;HumanObservation&quot;</span>)</span>
+<span id="cb22-12"><a href="#cb22-12"></a>  names &lt;-<span class="st"> </span><span class="kw">unique</span>(occ<span class="op">$</span>scientificName)</span>
+<span id="cb22-13"><a href="#cb22-13"></a>  names &lt;-<span class="st"> </span>names[names <span class="op">!=</span><span class="st"> &quot;&quot;</span>]</span>
+<span id="cb22-14"><a href="#cb22-14"></a>  names_clean &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names, clean_name))</span>
+<span id="cb22-15"><a href="#cb22-15"></a>  lsids &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names_clean, match_name))</span>
+<span id="cb22-16"><a href="#cb22-16"></a>  names &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">scientificName =</span> names, <span class="dt">lsid =</span> lsids)</span>
+<span id="cb22-17"><a href="#cb22-17"></a>  occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span></span>
+<span id="cb22-18"><a href="#cb22-18"></a><span class="st">    </span><span class="kw">left_join</span>(names, <span class="dt">by =</span> <span class="st">&quot;scientificName&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb22-19"><a href="#cb22-19"></a><span class="st">    </span><span class="kw">select</span>(<span class="op">-</span>scientificNameID) <span class="op">%&gt;%</span></span>
+<span id="cb22-20"><a href="#cb22-20"></a><span class="st">    </span><span class="kw">rename</span>(<span class="dt">scientificNameID =</span> lsid)</span>
+<span id="cb22-21"><a href="#cb22-21"></a>  </span>
+<span id="cb22-22"><a href="#cb22-22"></a>  <span class="co"># mof</span></span>
+<span id="cb22-23"><a href="#cb22-23"></a>  </span>
+<span id="cb22-24"><a href="#cb22-24"></a>  mof &lt;-<span class="st"> </span><span class="kw">extract_mof</span>(dataset)</span>
+<span id="cb22-25"><a href="#cb22-25"></a>  </span>
+<span id="cb22-26"><a href="#cb22-26"></a>  <span class="co"># EML</span></span>
+<span id="cb22-27"><a href="#cb22-27"></a>  </span>
+<span id="cb22-28"><a href="#cb22-28"></a>  eml &lt;-<span class="st"> </span><span class="kw">generate_eml</span>(dataset)</span>
+<span id="cb22-29"><a href="#cb22-29"></a>  </span>
+<span id="cb22-30"><a href="#cb22-30"></a>  <span class="co"># meta.xml</span></span>
+<span id="cb22-31"><a href="#cb22-31"></a>  </span>
+<span id="cb22-32"><a href="#cb22-32"></a>  meta &lt;-<span class="st"> </span><span class="kw">generate_meta</span>(occ, mof)</span>
+<span id="cb22-33"><a href="#cb22-33"></a>  </span>
+<span id="cb22-34"><a href="#cb22-34"></a>  <span class="co"># generate archive</span></span>
+<span id="cb22-35"><a href="#cb22-35"></a>  </span>
+<span id="cb22-36"><a href="#cb22-36"></a>  <span class="kw">write.table</span>(occ, <span class="dt">file =</span> <span class="st">&quot;output/occurrence.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb22-37"><a href="#cb22-37"></a>  <span class="kw">write.table</span>(mof, <span class="dt">file =</span> <span class="st">&quot;output/extendedmeasurementorfact.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb22-38"><a href="#cb22-38"></a>  <span class="kw">writeLines</span>(eml, <span class="st">&quot;output/eml.xml&quot;</span>)</span>
+<span id="cb22-39"><a href="#cb22-39"></a>  <span class="kw">writeLines</span>(meta, <span class="st">&quot;output/meta.xml&quot;</span>)</span>
+<span id="cb22-40"><a href="#cb22-40"></a>  </span>
+<span id="cb22-41"><a href="#cb22-41"></a>  files &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;occurrence.txt&quot;</span>, <span class="st">&quot;extendedmeasurementorfact.txt&quot;</span>, <span class="st">&quot;eml.xml&quot;</span>, <span class="st">&quot;meta.xml&quot;</span>)</span>
+<span id="cb22-42"><a href="#cb22-42"></a>  <span class="kw">setwd</span>(<span class="st">&quot;output&quot;</span>)</span>
+<span id="cb22-43"><a href="#cb22-43"></a>  <span class="kw">file.remove</span>(<span class="kw">glue</span>(<span class="st">&quot;{title}.zip&quot;</span>))</span>
+<span id="cb22-44"><a href="#cb22-44"></a>  <span class="kw">zip</span>(<span class="kw">glue</span>(<span class="st">&quot;{title}.zip&quot;</span>), files)</span>
+<span id="cb22-45"><a href="#cb22-45"></a>  <span class="cf">for</span> (f <span class="cf">in</span> files) {</span>
+<span id="cb22-46"><a href="#cb22-46"></a>    <span class="kw">file.remove</span>(f)</span>
+<span id="cb22-47"><a href="#cb22-47"></a>  }</span>
+<span id="cb22-48"><a href="#cb22-48"></a>  <span class="kw">setwd</span>(<span class="st">&quot;..&quot;</span>)</span>
+<span id="cb22-49"><a href="#cb22-49"></a></span>
+<span id="cb22-50"><a href="#cb22-50"></a>}</span></code></pre></div>
 </div>
 
    
