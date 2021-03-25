@@ -7,7 +7,7 @@ output: (function(...) {
 editor_options: 
   chunk_output_type: console
 knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = "web") })  
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs") })  
 ---
 
 This notebook processes data from the [International Seabed Authority](https://www.isa.org.jm/) (ISA) [DeepData](https://data.isa.org.jm/isa/map/) database into Darwin Core archives.
@@ -94,6 +94,14 @@ occ <- extract_occurrences(records_test)
 ```
 
 ### Cleaning up occurrence data
+
+First clean up any escaped newlines and fix `basisOfRecord`:
+
+```{r message=FALSE, warning=FALSE}
+occ <- occ %>%
+  mutate_all(function(x) { gsub("\\n", "", x) }) %>%
+  mutate(basisOfRecord = "HumanObservation")
+```
 
 Let's take a look at `scientificName` and `scientificNameID`.
 
@@ -278,5 +286,55 @@ generate_meta(occ, mof)
 
 ## Bringing it all together
 
+```{r message=FALSE, warning=FALSE}
+for (title in titles) {
 
+  dataset <- records %>%
+    filter(Metadata$title == title)
 
+  # occurrence
+    
+  occ <- extract_occurrences(dataset)
+  occ <- occ %>%
+    mutate_all(function(x) { gsub("\\n", "", x) }) %>%
+    mutate(basisOfRecord = "HumanObservation")
+  names <- unique(occ$scientificName)
+  names <- names[names != ""]
+  names_clean <- unlist(map(names, clean_name))
+  lsids <- unlist(map(names_clean, match_name))
+  names <- tibble(scientificName = names, lsid = lsids)
+  occ <- occ %>%
+    left_join(names, by = "scientificName") %>%
+    select(-scientificNameID) %>%
+    rename(scientificNameID = lsid)
+  
+  # mof
+  
+  mof <- extract_mof(dataset)
+  
+  # EML
+  
+  eml <- generate_eml(dataset)
+  
+  # meta.xml
+  
+  meta <- generate_meta(occ, mof)
+  
+  # generate archive
+  
+  write.table(occ, file = "output/occurrence.txt", sep = "\t", row.names = FALSE, na = "", quote = FALSE)
+  write.table(mof, file = "output/extendedmeasurementorfact.txt", sep = "\t", row.names = FALSE, na = "", quote = FALSE)
+  writeLines(eml, "output/eml.xml")
+  writeLines(meta, "output/meta.xml")
+  
+  files <- c("occurrence.txt", "extendedmeasurementorfact.txt", "eml.xml", "meta.xml")
+  setwd("output")
+  file.remove(glue("{title}.zip"))
+  zip(glue("{title}.zip"), files)
+  for (f in files) {
+    file.remove(f)
+  }
+  setwd("..")
+
+}
+```

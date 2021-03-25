@@ -7,7 +7,7 @@
 
         <meta name="author" content="Pieter Provoost" />
     
-        <meta name="date" content="2021-03-23" />
+        <meta name="date" content="2021-03-25" />
     
     <title>ISA DeepData</title>
 
@@ -3104,14 +3104,21 @@ window.onload = function() {
           <ul>
           <li><a href="#fetching-the-data-from-the-isa-server">Fetching the data from the ISA server</a></li>
           <li><a href="#parsing-the-json-file">Parsing the JSON file</a></li>
-          <li><a href="#generating-darwin-core-archives">Generating Darwin Core archives</a></li>
+          <li><a href="#generating-darwin-core-data-files">Generating Darwin Core data files</a>
+          <ul>
+          <li><a href="#extracting-occurrence-data">Extracting occurrence data</a></li>
+          <li><a href="#cleaning-up-occurrence-data">Cleaning up occurrence data</a></li>
+          <li><a href="#extracting-measurementorfact-data">Extracting MeasurementOrFact data</a></li>
+          </ul></li>
+          <li><a href="#generating-eml">Generating EML</a></li>
+          <li><a href="#generating-an-archive-descriptor-file">Generating an archive descriptor file</a></li>
           <li><a href="#bringing-it-all-together">Bringing it all together</a></li>
           </ul>
         </nav>
         <ul class="authors">
           <li class="divider"></li>
                                 <li><span><i class="glyphicon glyphicon-user"></i> Pieter Provoost</span></li>
-                                         <li><span><i class="glyphicon glyphicon-calendar"></i> 2021-03-23</span></li>
+                                         <li><span><i class="glyphicon glyphicon-calendar"></i> 2021-03-25</span></li>
                   </ul>     
       </div>
       <div class="book-body fixed">
@@ -3135,7 +3142,7 @@ window.onload = function() {
 <p>This notebook processes data from the <a href="https://www.isa.org.jm/">International Seabed Authority</a> (ISA) <a href="https://data.isa.org.jm/isa/map/">DeepData</a> database into Darwin Core archives.</p>
 <div id="fetching-the-data-from-the-isa-server" class="section level2">
 <h2>Fetching the data from the ISA server</h2>
-<p>The DeepData dataset is delivered to OBIS via FTP. Let’s list the files on the FTP server and download the most recent JSON file to a temporary directory.</p>
+<p>The DeepData dataset is delivered to OBIS via FTP. Let’s list the files on the FTP server and download the most recent JSON file to a temporary directory. Credentials are stored in <code>env.txt</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">require</span>(RCurl)</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(stringr)</span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="kw">library</span>(dplyr)</span>
@@ -3166,8 +3173,8 @@ window.onload = function() {
 <span id="cb2-6"><a href="#cb2-6"></a><span class="kw">close</span>(con)</span>
 <span id="cb2-7"><a href="#cb2-7"></a>records &lt;-<span class="st"> </span><span class="kw">fromJSON</span>(lines, <span class="dt">simplifyDataFrame =</span> <span class="ot">TRUE</span>)<span class="op">$</span>DEEPDATA</span></code></pre></div>
 </div>
-<div id="generating-darwin-core-archives" class="section level2">
-<h2>Generating Darwin Core archives</h2>
+<div id="generating-darwin-core-data-files" class="section level2">
+<h2>Generating Darwin Core data files</h2>
 <p>We can now extract a list of distinct datasets from the data frame, and generate a Darwin Core archive for each dataset.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>titles &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="st">  </span><span class="kw">distinct</span>(Metadata<span class="op">$</span>title) <span class="op">%&gt;%</span></span>
@@ -3181,7 +3188,7 @@ window.onload = function() {
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>records<span class="op">$</span>id &lt;-<span class="st"> </span>records<span class="op">$</span>Occurrence<span class="op">$</span>occurrenceID</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="kw">stopifnot</span>(<span class="kw">length</span>(<span class="kw">unique</span>(records<span class="op">$</span>id)) <span class="op">==</span><span class="st"> </span><span class="kw">nrow</span>(records))</span></code></pre></div>
 <p>Here I’m creating a subset for testing purposes. At the end of the notebook we will process all subsets.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>df &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>records_test &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="st">  </span><span class="kw">filter</span>(Metadata<span class="op">$</span>title <span class="op">==</span><span class="st"> </span>titles[<span class="dv">1</span>])</span></code></pre></div>
 <p>Now we can select and process the columns that will go into the occurrence table.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>extract_occurrences &lt;-<span class="st"> </span><span class="cf">function</span>(df) {</span>
@@ -3192,7 +3199,7 @@ window.onload = function() {
 <span id="cb7-6"><a href="#cb7-6"></a><span class="st">      </span><span class="kw">as_tibble</span>()</span>
 <span id="cb7-7"><a href="#cb7-7"></a>}</span>
 <span id="cb7-8"><a href="#cb7-8"></a></span>
-<span id="cb7-9"><a href="#cb7-9"></a>occ &lt;-<span class="st"> </span><span class="kw">extract_occurrences</span>(records)</span></code></pre></div>
+<span id="cb7-9"><a href="#cb7-9"></a>occ &lt;-<span class="st"> </span><span class="kw">extract_occurrences</span>(records_test)</span></code></pre></div>
 </div>
 <div id="cleaning-up-occurrence-data" class="section level3">
 <h3>Cleaning up occurrence data</h3>
@@ -3436,10 +3443,282 @@ window.onload = function() {
 </div>
 <div id="extracting-measurementorfact-data" class="section level3">
 <h3>Extracting MeasurementOrFact data</h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>extract_mof &lt;-<span class="st"> </span><span class="cf">function</span>(df) {</span>
+<span id="cb14-2"><a href="#cb14-2"></a>    df <span class="op">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="st">      </span><span class="kw">select</span>(<span class="st">&quot;id&quot;</span>, <span class="st">&quot;MeasurementOrFact&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="st">      </span>jsonlite<span class="op">::</span><span class="kw">flatten</span>() <span class="op">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="st">      </span><span class="kw">rename_all</span>(<span class="op">~</span><span class="kw">str_replace</span>(., <span class="st">&quot;.*</span><span class="ch">\\</span><span class="st">.&quot;</span>, <span class="st">&quot;&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="st">      </span><span class="kw">filter</span>(measurementType <span class="op">!=</span><span class="st"> &quot;&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7"></a><span class="st">      </span><span class="kw">as_tibble</span>()</span>
+<span id="cb14-8"><a href="#cb14-8"></a>}</span>
+<span id="cb14-9"><a href="#cb14-9"></a></span>
+<span id="cb14-10"><a href="#cb14-10"></a>mof &lt;-<span class="st"> </span><span class="kw">extract_mof</span>(records)</span>
+<span id="cb14-11"><a href="#cb14-11"></a>mof</span></code></pre></div>
+<pre><code>## # A tibble: 1,052 x 5
+##    id           measurementID  measurementType  measurementValue measurementUnit
+##    &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;            &lt;chr&gt;            &lt;chr&gt;          
+##  1 08Gr01-A_08… 08Gr01-A-1478… Relative abunda… 100              %              
+##  2 09D11_09D11… 09D11-6024788… Relative abunda… 100              %              
+##  3 09D08-A_09D… 09D08-A-55647… Relative abunda… 50               %              
+##  4 106_MUC_J    J472083        Relative abunda… 92.3             %              
+##  5 1923_1923-4… 1923-43761524… Relative abunda… 91.8464933837996 %              
+##  6 28_EBS_G     G472116        Relative abunda… 7.93650793650794 %              
+##  7 34IV-SWIR-S… R305494404     Relative abunda… 0.39             %              
+##  8 34IV-SWIR-S… R306494405     Relative abunda… 0.2              %              
+##  9 09D11-2_09D… 09D11-2-60247… Relative abunda… 50               %              
+## 10 100_MUC_R    R472110        Relative abunda… 90.75            %              
+## # … with 1,042 more rows</code></pre>
 </div>
+</div>
+<div id="generating-eml" class="section level2">
+<h2>Generating EML</h2>
+<p>As the metadata records are all the same within a dataset, let’s take the first and use that to populate the EML. Note that the EML template is read from <code>eml.xml</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">library</span>(readr)</span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="kw">library</span>(glue)</span>
+<span id="cb16-3"><a href="#cb16-3"></a></span>
+<span id="cb16-4"><a href="#cb16-4"></a>generate_eml &lt;-<span class="st"> </span><span class="cf">function</span>(df) {</span>
+<span id="cb16-5"><a href="#cb16-5"></a>  eml &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;eml.xml&quot;</span>)</span>
+<span id="cb16-6"><a href="#cb16-6"></a>  metadata &lt;-<span class="st"> </span>df<span class="op">$</span>Metadata[<span class="dv">1</span>,]</span>
+<span id="cb16-7"><a href="#cb16-7"></a>  firstname &lt;-<span class="st"> </span><span class="kw">strsplit</span>(metadata<span class="op">$</span>Contact<span class="op">$</span>name, <span class="st">&quot; &quot;</span>)[[<span class="dv">1</span>]][<span class="dv">1</span>]</span>
+<span id="cb16-8"><a href="#cb16-8"></a>  lastname &lt;-<span class="st"> </span><span class="kw">strsplit</span>(metadata<span class="op">$</span>Contact<span class="op">$</span>name, <span class="st">&quot; &quot;</span>)[[<span class="dv">1</span>]][<span class="dv">2</span>]</span>
+<span id="cb16-9"><a href="#cb16-9"></a>  organization &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>organisation</span>
+<span id="cb16-10"><a href="#cb16-10"></a>  email &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>email</span>
+<span id="cb16-11"><a href="#cb16-11"></a>  position &lt;-<span class="st"> </span>metadata<span class="op">$</span>Contact<span class="op">$</span>position</span>
+<span id="cb16-12"><a href="#cb16-12"></a>  abstract &lt;-<span class="st"> </span>metadata<span class="op">$</span>abstract</span>
+<span id="cb16-13"><a href="#cb16-13"></a>  title &lt;-<span class="st"> </span>metadata<span class="op">$</span>title</span>
+<span id="cb16-14"><a href="#cb16-14"></a>  citation &lt;-<span class="st"> </span>metadata<span class="op">$</span>citation</span>
+<span id="cb16-15"><a href="#cb16-15"></a>  packageid &lt;-<span class="st"> &quot;https://datasets.obis.org/deepdata&quot;</span></span>
+<span id="cb16-16"><a href="#cb16-16"></a>  pubdate &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%Y-%m-%d&quot;</span>)</span>
+<span id="cb16-17"><a href="#cb16-17"></a>  datestamp &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%Y-%m-%dT%H:%M:%S%z&quot;</span>)</span>
+<span id="cb16-18"><a href="#cb16-18"></a>  <span class="kw">glue</span>(eml)</span>
+<span id="cb16-19"><a href="#cb16-19"></a>}</span>
+<span id="cb16-20"><a href="#cb16-20"></a></span>
+<span id="cb16-21"><a href="#cb16-21"></a><span class="kw">generate_eml</span>(records_test)</span></code></pre></div>
+<pre><code>## &lt;eml:eml xmlns:eml=&quot;eml://ecoinformatics.org/eml-2.1.1&quot;
+##   xmlns:dc=&quot;http://purl.org/dc/terms/&quot;
+##   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+##   xsi:schemaLocation=&quot;eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd&quot;
+##   packageId=&quot;https://datasets.obis.org/deepdata&quot; system=&quot;http://gbif.org&quot; scope=&quot;system&quot;
+##   xml:lang=&quot;eng&quot;&gt;
+## 
+## &lt;dataset&gt;
+##   &lt;title xml:lang=&quot;eng&quot;&gt;Biological Sampling&lt;/title&gt;
+##   &lt;pubDate&gt;2021-03-25&lt;/pubDate&gt;
+##   &lt;language&gt;eng&lt;/language&gt;
+##   &lt;abstract&gt;
+##     &lt;para&gt;Sampling data captured in Oceanic Exploration Research&lt;/para&gt;
+##   &lt;/abstract&gt;
+##   &lt;keywordSet&gt;
+##     &lt;keyword&gt;Occurrence&lt;/keyword&gt;
+##     &lt;keywordThesaurus&gt;GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type.xml&lt;/keywordThesaurus&gt;
+##   &lt;/keywordSet&gt;
+##   &lt;intellectualRights&gt;
+##     &lt;para&gt;To the extent possible under law, the publisher has waived all rights to these data and has dedicated them to the &lt;ulink url=&quot;http://creativecommons.org/publicdomain/zero/1.0/legalcode&quot;&gt;&lt;citetitle&gt;Public Domain (CC0 1.0)&lt;/citetitle&gt;&lt;/ulink&gt;. Users may copy, modify, distribute and use the work, including for commercial purposes, without restriction.&lt;/para&gt;
+##   &lt;/intellectualRights&gt;
+##   &lt;maintenance&gt;
+##     &lt;description&gt;
+##       &lt;para&gt;&lt;/para&gt;
+##     &lt;/description&gt;
+##     &lt;maintenanceUpdateFrequency&gt;unkown&lt;/maintenanceUpdateFrequency&gt;
+##   &lt;/maintenance&gt;
+##   &lt;creator&gt;
+##     &lt;individualName&gt;
+##     &lt;givenName&gt;Sheldon&lt;/givenName&gt;
+##     &lt;surName&gt;Carter&lt;/surName&gt;
+##     &lt;/individualName&gt;
+##     &lt;organizationName&gt;International Seabed Authority&lt;/organizationName&gt;
+##     &lt;positionName&gt;Database Manager&lt;/positionName&gt;
+##     &lt;electronicMailAddress&gt;scarter@isa.org.jm&lt;/electronicMailAddress&gt;
+##   &lt;/creator&gt;
+##   &lt;metadataProvider&gt;
+##     &lt;individualName&gt;
+##     &lt;givenName&gt;Sheldon&lt;/givenName&gt;
+##     &lt;surName&gt;Carter&lt;/surName&gt;
+##     &lt;/individualName&gt;
+##     &lt;organizationName&gt;International Seabed Authority&lt;/organizationName&gt;
+##     &lt;positionName&gt;Database Manager&lt;/positionName&gt;
+##     &lt;electronicMailAddress&gt;scarter@isa.org.jm&lt;/electronicMailAddress&gt;
+##   &lt;/metadataProvider&gt;
+##   &lt;contact&gt;
+##     &lt;individualName&gt;
+##     &lt;givenName&gt;Sheldon&lt;/givenName&gt;
+##     &lt;surName&gt;Carter&lt;/surName&gt;
+##     &lt;/individualName&gt;
+##     &lt;organizationName&gt;International Seabed Authority&lt;/organizationName&gt;
+##     &lt;positionName&gt;Database Manager&lt;/positionName&gt;
+##     &lt;electronicMailAddress&gt;scarter@isa.org.jm&lt;/electronicMailAddress&gt;
+##   &lt;/contact&gt;
+## &lt;/dataset&gt;
+## &lt;additionalMetadata&gt;
+## &lt;metadata&gt;
+## &lt;gbif&gt;
+##   &lt;dateStamp&gt;2021-03-25T17:25:14+0100&lt;/dateStamp&gt;
+##   &lt;hierarchyLevel&gt;dataset&lt;/hierarchyLevel&gt;
+##   &lt;citation&gt;International Seabed Authority, DeepData&lt;/citation&gt;
+## &lt;/gbif&gt;
+## &lt;/metadata&gt;
+## &lt;/additionalMetadata&gt;
+## &lt;/eml:eml&gt;</code></pre>
+</div>
+<div id="generating-an-archive-descriptor-file" class="section level2">
+<h2>Generating an archive descriptor file</h2>
+<p>The archive also needs to include a <code>meta.xml</code> file which describes the files in the archive and their relationships.</p>
+<p>Let’s first get a list of terms including their <code>qualName</code>.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">library</span>(xml2)</span>
+<span id="cb18-2"><a href="#cb18-2"></a></span>
+<span id="cb18-3"><a href="#cb18-3"></a>get_terms &lt;-<span class="st"> </span><span class="cf">function</span>(url) {</span>
+<span id="cb18-4"><a href="#cb18-4"></a>  doc &lt;-<span class="st"> </span><span class="kw">read_xml</span>(url)</span>
+<span id="cb18-5"><a href="#cb18-5"></a>  terms &lt;-<span class="st"> </span>doc <span class="op">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6"></a><span class="st">    </span><span class="kw">xml_ns_strip</span>() <span class="op">%&gt;%</span></span>
+<span id="cb18-7"><a href="#cb18-7"></a><span class="st">    </span><span class="kw">xml_find_all</span>(<span class="st">&quot;.//property&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-8"><a href="#cb18-8"></a><span class="st">    </span><span class="kw">map_df</span>(<span class="cf">function</span>(x) {</span>
+<span id="cb18-9"><a href="#cb18-9"></a>      <span class="kw">list</span>(</span>
+<span id="cb18-10"><a href="#cb18-10"></a>        <span class="dt">name =</span> <span class="kw">xml_attr</span>(x, <span class="st">&quot;name&quot;</span>),</span>
+<span id="cb18-11"><a href="#cb18-11"></a>        <span class="dt">qual =</span> <span class="kw">xml_attr</span>(x, <span class="st">&quot;qualName&quot;</span>)</span>
+<span id="cb18-12"><a href="#cb18-12"></a>      )</span>
+<span id="cb18-13"><a href="#cb18-13"></a>    })</span>
+<span id="cb18-14"><a href="#cb18-14"></a>}</span>
+<span id="cb18-15"><a href="#cb18-15"></a></span>
+<span id="cb18-16"><a href="#cb18-16"></a>occurrence_terms &lt;-<span class="st"> </span><span class="kw">get_terms</span>(<span class="st">&quot;https://rs.gbif.org/core/dwc_occurrence_2020-07-15.xml&quot;</span>)</span>
+<span id="cb18-17"><a href="#cb18-17"></a>mof_terms &lt;-<span class="st"> </span><span class="kw">get_terms</span>(<span class="st">&quot;https://rs.gbif.org/extension/obis/extended_measurement_or_fact.xml&quot;</span>)</span></code></pre></div>
+<p>Using these we can generate a list of terms to go into the <code>meta.xml</code> file for each table.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>generate_meta &lt;-<span class="st"> </span><span class="cf">function</span>(occ, mof) {</span>
+<span id="cb19-2"><a href="#cb19-2"></a>  occurrence_fields &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">name =</span> <span class="kw">names</span>(occ)) <span class="op">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a><span class="st">    </span><span class="kw">left_join</span>(occurrence_terms, <span class="dt">by =</span> <span class="st">&quot;name&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">index =</span> <span class="kw">as.numeric</span>(<span class="kw">row.names</span>(.)) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb19-5"><a href="#cb19-5"></a>  </span>
+<span id="cb19-6"><a href="#cb19-6"></a>  occurrence_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;&lt;field index=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, occurrence_fields<span class="op">$</span>index, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st"> term=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, occurrence_fields<span class="op">$</span>qual, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">/&gt;&quot;</span>)</span>
+<span id="cb19-7"><a href="#cb19-7"></a>  occurrence_lines[<span class="dv">1</span>] &lt;-<span class="st"> &quot;&lt;id index=</span><span class="ch">\&quot;</span><span class="st">0</span><span class="ch">\&quot;</span><span class="st"> /&gt;&quot;</span></span>
+<span id="cb19-8"><a href="#cb19-8"></a>  occurrence_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(occurrence_lines, <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb19-9"><a href="#cb19-9"></a></span>
+<span id="cb19-10"><a href="#cb19-10"></a>  mof_fields &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">name =</span> <span class="kw">names</span>(mof)) <span class="op">%&gt;%</span></span>
+<span id="cb19-11"><a href="#cb19-11"></a><span class="st">  </span><span class="kw">left_join</span>(mof_terms, <span class="dt">by =</span> <span class="st">&quot;name&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb19-12"><a href="#cb19-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">index =</span> <span class="kw">as.numeric</span>(<span class="kw">row.names</span>(.)) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)</span>
+<span id="cb19-13"><a href="#cb19-13"></a></span>
+<span id="cb19-14"><a href="#cb19-14"></a>  mof_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;&lt;field index=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, mof_fields<span class="op">$</span>index, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st"> term=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, mof_fields<span class="op">$</span>qual, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">/&gt;&quot;</span>)</span>
+<span id="cb19-15"><a href="#cb19-15"></a>  mof_lines[<span class="dv">1</span>] &lt;-<span class="st"> &quot;&lt;coreid index=</span><span class="ch">\&quot;</span><span class="st">0</span><span class="ch">\&quot;</span><span class="st"> /&gt;&quot;</span></span>
+<span id="cb19-16"><a href="#cb19-16"></a>  mof_lines &lt;-<span class="st"> </span><span class="kw">paste0</span>(mof_lines, <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb19-17"><a href="#cb19-17"></a></span>
+<span id="cb19-18"><a href="#cb19-18"></a>  meta &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;meta.xml&quot;</span>)</span>
+<span id="cb19-19"><a href="#cb19-19"></a>  <span class="kw">glue</span>(meta)</span>
+<span id="cb19-20"><a href="#cb19-20"></a>}</span>
+<span id="cb19-21"><a href="#cb19-21"></a></span>
+<span id="cb19-22"><a href="#cb19-22"></a><span class="kw">generate_meta</span>(occ, mof)</span></code></pre></div>
+<pre><code>## &lt;archive xmlns=&quot;http://rs.tdwg.org/dwc/text/&quot; metadata=&quot;eml.xml&quot;&gt;
+##   &lt;core encoding=&quot;UTF-8&quot; fieldsTerminatedBy=&quot;\t&quot; linesTerminatedBy=&quot;\n&quot; fieldsEnclosedBy=&quot;&quot; ignoreHeaderLines=&quot;1&quot; rowType=&quot;http://rs.tdwg.org/dwc/terms/Occurrence&quot;&gt;
+##     &lt;files&gt;
+##       &lt;location&gt;occurrence.txt&lt;/location&gt;
+##     &lt;/files&gt;
+##     &lt;id index=&quot;0&quot; /&gt;
+## &lt;field index=&quot;1&quot; term=&quot;http://rs.tdwg.org/dwc/terms/occurrenceID&quot;/&gt;
+## &lt;field index=&quot;2&quot; term=&quot;http://rs.tdwg.org/dwc/terms/catalogNumber&quot;/&gt;
+## &lt;field index=&quot;3&quot; term=&quot;http://rs.tdwg.org/dwc/terms/recordedBy&quot;/&gt;
+## &lt;field index=&quot;4&quot; term=&quot;http://rs.tdwg.org/dwc/terms/individualCount&quot;/&gt;
+## &lt;field index=&quot;5&quot; term=&quot;http://rs.tdwg.org/dwc/terms/organismQuantity&quot;/&gt;
+## &lt;field index=&quot;6&quot; term=&quot;http://rs.tdwg.org/dwc/terms/organismQuantityType&quot;/&gt;
+## &lt;field index=&quot;7&quot; term=&quot;http://rs.tdwg.org/dwc/terms/sex&quot;/&gt;
+## &lt;field index=&quot;8&quot; term=&quot;http://rs.tdwg.org/dwc/terms/occurrenceStatus&quot;/&gt;
+## &lt;field index=&quot;9&quot; term=&quot;http://rs.tdwg.org/dwc/terms/associatedSequences&quot;/&gt;
+## &lt;field index=&quot;10&quot; term=&quot;http://rs.tdwg.org/dwc/terms/occurrenceRemarks&quot;/&gt;
+## &lt;field index=&quot;11&quot; term=&quot;http://rs.tdwg.org/dwc/terms/eventID&quot;/&gt;
+## &lt;field index=&quot;12&quot; term=&quot;http://rs.tdwg.org/dwc/terms/eventDate&quot;/&gt;
+## &lt;field index=&quot;13&quot; term=&quot;http://rs.tdwg.org/dwc/terms/eventTime&quot;/&gt;
+## &lt;field index=&quot;14&quot; term=&quot;http://rs.tdwg.org/dwc/terms/year&quot;/&gt;
+## &lt;field index=&quot;15&quot; term=&quot;http://rs.tdwg.org/dwc/terms/month&quot;/&gt;
+## &lt;field index=&quot;16&quot; term=&quot;http://rs.tdwg.org/dwc/terms/day&quot;/&gt;
+## &lt;field index=&quot;17&quot; term=&quot;http://rs.tdwg.org/dwc/terms/habitat&quot;/&gt;
+## &lt;field index=&quot;18&quot; term=&quot;http://rs.tdwg.org/dwc/terms/samplingProtocol&quot;/&gt;
+## &lt;field index=&quot;19&quot; term=&quot;http://rs.tdwg.org/dwc/terms/eventRemarks&quot;/&gt;
+## &lt;field index=&quot;20&quot; term=&quot;http://rs.tdwg.org/dwc/terms/locationID&quot;/&gt;
+## &lt;field index=&quot;21&quot; term=&quot;http://rs.tdwg.org/dwc/terms/minimumDepthInMeters&quot;/&gt;
+## &lt;field index=&quot;22&quot; term=&quot;http://rs.tdwg.org/dwc/terms/maximumDepthInMeters&quot;/&gt;
+## &lt;field index=&quot;23&quot; term=&quot;http://rs.tdwg.org/dwc/terms/verbatimDepth&quot;/&gt;
+## &lt;field index=&quot;24&quot; term=&quot;http://rs.tdwg.org/dwc/terms/decimalLatitude&quot;/&gt;
+## &lt;field index=&quot;25&quot; term=&quot;http://rs.tdwg.org/dwc/terms/decimalLongitude&quot;/&gt;
+## &lt;field index=&quot;26&quot; term=&quot;http://rs.tdwg.org/dwc/terms/verbatimCoordinateSystem&quot;/&gt;
+## &lt;field index=&quot;27&quot; term=&quot;http://rs.tdwg.org/dwc/terms/verbatimSRS&quot;/&gt;
+## &lt;field index=&quot;28&quot; term=&quot;http://rs.tdwg.org/dwc/terms/identificationID&quot;/&gt;
+## &lt;field index=&quot;29&quot; term=&quot;http://rs.tdwg.org/dwc/terms/typeStatus&quot;/&gt;
+## &lt;field index=&quot;30&quot; term=&quot;http://rs.tdwg.org/dwc/terms/identifiedBy&quot;/&gt;
+## &lt;field index=&quot;31&quot; term=&quot;http://rs.tdwg.org/dwc/terms/dateIdentified&quot;/&gt;
+## &lt;field index=&quot;32&quot; term=&quot;http://rs.tdwg.org/dwc/terms/identificationVerificationStatus&quot;/&gt;
+## &lt;field index=&quot;33&quot; term=&quot;http://purl.org/dc/terms/type&quot;/&gt;
+## &lt;field index=&quot;34&quot; term=&quot;http://purl.org/dc/terms/license&quot;/&gt;
+## &lt;field index=&quot;35&quot; term=&quot;http://purl.org/dc/terms/rightsHolder&quot;/&gt;
+## &lt;field index=&quot;36&quot; term=&quot;http://purl.org/dc/terms/accessRights&quot;/&gt;
+## &lt;field index=&quot;37&quot; term=&quot;http://purl.org/dc/terms/bibliographicCitation&quot;/&gt;
+## &lt;field index=&quot;38&quot; term=&quot;http://rs.tdwg.org/dwc/terms/institutionID&quot;/&gt;
+## &lt;field index=&quot;39&quot; term=&quot;http://rs.tdwg.org/dwc/terms/basisOfRecord&quot;/&gt;
+## &lt;field index=&quot;40&quot; term=&quot;http://rs.tdwg.org/dwc/terms/taxonID&quot;/&gt;
+## &lt;field index=&quot;41&quot; term=&quot;http://rs.tdwg.org/dwc/terms/scientificName&quot;/&gt;
+## &lt;field index=&quot;42&quot; term=&quot;http://rs.tdwg.org/dwc/terms/kingdom&quot;/&gt;
+## &lt;field index=&quot;43&quot; term=&quot;http://rs.tdwg.org/dwc/terms/phylum&quot;/&gt;
+## &lt;field index=&quot;44&quot; term=&quot;http://rs.tdwg.org/dwc/terms/class&quot;/&gt;
+## &lt;field index=&quot;45&quot; term=&quot;http://rs.tdwg.org/dwc/terms/order&quot;/&gt;
+## &lt;field index=&quot;46&quot; term=&quot;http://rs.tdwg.org/dwc/terms/family&quot;/&gt;
+## &lt;field index=&quot;47&quot; term=&quot;http://rs.tdwg.org/dwc/terms/genus&quot;/&gt;
+## &lt;field index=&quot;48&quot; term=&quot;http://rs.tdwg.org/dwc/terms/taxonRank&quot;/&gt;
+## &lt;field index=&quot;49&quot; term=&quot;http://rs.tdwg.org/dwc/terms/taxonomicStatus&quot;/&gt;
+## &lt;field index=&quot;50&quot; term=&quot;http://rs.tdwg.org/dwc/terms/scientificNameID&quot;/&gt;
+##   &lt;/core&gt;
+##   &lt;extension encoding=&quot;UTF-8&quot; fieldsTerminatedBy=&quot;\t&quot; linesTerminatedBy=&quot;\n&quot; fieldsEnclosedBy=&quot;&quot; ignoreHeaderLines=&quot;1&quot; rowType=&quot;http://rs.iobis.org/obis/terms/ExtendedMeasurementOrFact&quot;&gt;
+##     &lt;files&gt;
+##       &lt;location&gt;extendedmeasurementorfact.txt&lt;/location&gt;
+##     &lt;/files&gt;
+##     &lt;coreid index=&quot;0&quot; /&gt;
+## &lt;field index=&quot;1&quot; term=&quot;http://rs.tdwg.org/dwc/terms/measurementID&quot;/&gt;
+## &lt;field index=&quot;2&quot; term=&quot;http://rs.tdwg.org/dwc/terms/measurementType&quot;/&gt;
+## &lt;field index=&quot;3&quot; term=&quot;http://rs.tdwg.org/dwc/terms/measurementValue&quot;/&gt;
+## &lt;field index=&quot;4&quot; term=&quot;http://rs.tdwg.org/dwc/terms/measurementUnit&quot;/&gt;
+##   &lt;/extension&gt;
+## &lt;/archive&gt;</code></pre>
 </div>
 <div id="bringing-it-all-together" class="section level2">
 <h2>Bringing it all together</h2>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="cf">for</span> (title <span class="cf">in</span> titles) {</span>
+<span id="cb21-2"><a href="#cb21-2"></a></span>
+<span id="cb21-3"><a href="#cb21-3"></a>  dataset &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a><span class="st">    </span><span class="kw">filter</span>(Metadata<span class="op">$</span>title <span class="op">==</span><span class="st"> </span>title)</span>
+<span id="cb21-5"><a href="#cb21-5"></a></span>
+<span id="cb21-6"><a href="#cb21-6"></a>  <span class="co"># occurrence</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a>    </span>
+<span id="cb21-8"><a href="#cb21-8"></a>  occ &lt;-<span class="st"> </span><span class="kw">extract_occurrences</span>(dataset)</span>
+<span id="cb21-9"><a href="#cb21-9"></a>  names &lt;-<span class="st"> </span><span class="kw">unique</span>(occ<span class="op">$</span>scientificName)</span>
+<span id="cb21-10"><a href="#cb21-10"></a>  names &lt;-<span class="st"> </span>names[names <span class="op">!=</span><span class="st"> &quot;&quot;</span>]</span>
+<span id="cb21-11"><a href="#cb21-11"></a>  names_clean &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names, clean_name))</span>
+<span id="cb21-12"><a href="#cb21-12"></a>  lsids &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">map</span>(names_clean, match_name))</span>
+<span id="cb21-13"><a href="#cb21-13"></a>  names &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">scientificName =</span> names, <span class="dt">lsid =</span> lsids)</span>
+<span id="cb21-14"><a href="#cb21-14"></a>  occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span></span>
+<span id="cb21-15"><a href="#cb21-15"></a><span class="st">    </span><span class="kw">left_join</span>(names, <span class="dt">by =</span> <span class="st">&quot;scientificName&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb21-16"><a href="#cb21-16"></a><span class="st">    </span><span class="kw">select</span>(<span class="op">-</span>scientificNameID) <span class="op">%&gt;%</span></span>
+<span id="cb21-17"><a href="#cb21-17"></a><span class="st">    </span><span class="kw">rename</span>(<span class="dt">scientificNameID =</span> lsid)</span>
+<span id="cb21-18"><a href="#cb21-18"></a>  </span>
+<span id="cb21-19"><a href="#cb21-19"></a>  <span class="co"># mof</span></span>
+<span id="cb21-20"><a href="#cb21-20"></a>  </span>
+<span id="cb21-21"><a href="#cb21-21"></a>  mof &lt;-<span class="st"> </span><span class="kw">extract_mof</span>(dataset)</span>
+<span id="cb21-22"><a href="#cb21-22"></a>  </span>
+<span id="cb21-23"><a href="#cb21-23"></a>  <span class="co"># EML</span></span>
+<span id="cb21-24"><a href="#cb21-24"></a>  </span>
+<span id="cb21-25"><a href="#cb21-25"></a>  eml &lt;-<span class="st"> </span><span class="kw">generate_eml</span>(dataset)</span>
+<span id="cb21-26"><a href="#cb21-26"></a>  </span>
+<span id="cb21-27"><a href="#cb21-27"></a>  <span class="co"># meta.xml</span></span>
+<span id="cb21-28"><a href="#cb21-28"></a>  </span>
+<span id="cb21-29"><a href="#cb21-29"></a>  meta &lt;-<span class="st"> </span><span class="kw">generate_meta</span>(occ, mof)</span>
+<span id="cb21-30"><a href="#cb21-30"></a>  </span>
+<span id="cb21-31"><a href="#cb21-31"></a>  <span class="co"># generate archive</span></span>
+<span id="cb21-32"><a href="#cb21-32"></a>  </span>
+<span id="cb21-33"><a href="#cb21-33"></a>  <span class="kw">write.table</span>(occ, <span class="dt">file =</span> <span class="st">&quot;occurrence.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb21-34"><a href="#cb21-34"></a>  <span class="kw">write.table</span>(mof, <span class="dt">file =</span> <span class="st">&quot;extendedmeasurementorfact.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb21-35"><a href="#cb21-35"></a>  <span class="kw">writeLines</span>(eml, <span class="st">&quot;eml.xml&quot;</span>)</span>
+<span id="cb21-36"><a href="#cb21-36"></a>  <span class="kw">writeLines</span>(meta, <span class="st">&quot;meta.xml&quot;</span>)</span>
+<span id="cb21-37"><a href="#cb21-37"></a>  </span>
+<span id="cb21-38"><a href="#cb21-38"></a>  files &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;occurrence.txt&quot;</span>, <span class="st">&quot;extendedmeasurementorfact.txt&quot;</span>, <span class="st">&quot;eml.xml&quot;</span>, <span class="st">&quot;meta.xml&quot;</span>)</span>
+<span id="cb21-39"><a href="#cb21-39"></a>  <span class="kw">zip</span>(<span class="kw">glue</span>(<span class="st">&quot;{title}.zip&quot;</span>), files)</span>
+<span id="cb21-40"><a href="#cb21-40"></a>  <span class="cf">for</span> (f <span class="cf">in</span> files) {</span>
+<span id="cb21-41"><a href="#cb21-41"></a>    <span class="kw">file.remove</span>(f)</span>
+<span id="cb21-42"><a href="#cb21-42"></a>  }</span>
+<span id="cb21-43"><a href="#cb21-43"></a></span>
+<span id="cb21-44"><a href="#cb21-44"></a>}</span></code></pre></div>
 </div>
 
    
