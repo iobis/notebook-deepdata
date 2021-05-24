@@ -30,8 +30,9 @@ res <- getURL(url, verbose = TRUE, ftp.use.epsv = FALSE, dirlistonly = TRUE)
 filenames <- unlist(strsplit(res, "\\n"))
 filenames <- sort(filenames[str_detect(filenames, ".json")], decreasing = TRUE)
 
-if (length(filenames) == 0) {
-  stop("No files found")
+
+if (length(filenames) != 1) {
+  stop("Unexpected number of files found")
 }
 
 file_url <- paste0(url, "/", filenames[1])
@@ -41,21 +42,30 @@ download.file(file_url, temp_file)
 
 ## Parsing the JSON file
 
-As the JSON file is encoded in the non-standard `ISO-8859-1`, we need to use `readLines` before parsing the data with the jsonlite package.
+Earlier versions of the file were encoded in the non-standard `ISO-8859-1`, requiring the need to use `readLines` before parsing the data with the jsonlite package, but that seems to be fixed now.
 
 ```{r message=FALSE, warning=FALSE}
 library(jsonlite)
 library(purrr)
 
 con <- file(temp_file)
-lines <- readLines(file(temp_file, encoding = "ISO-8859-1"), warn = FALSE)
+lines <- readLines(file(temp_file, encoding = "UTF-8"), warn = FALSE)
 close(con)
-records <- fromJSON(lines, simplifyDataFrame = TRUE)$DEEPDATA
+records <- fromJSON(lines, simplifyDataFrame = TRUE)$DEEPDATA %>%
+  as_tibble()
 ```
 
 ## Generating Darwin Core data files
 
-We can now extract a list of distinct datasets from the data frame, and generate a Darwin Core archive for each dataset.
+We can now extract a list of distinct datasets from the data frame, and generate a Darwin Core archive for each dataset. I'm using `group_indices()` to assign a unique dataset identifier to each record.
+
+```{r message=FALSE, warning=FALSE}
+dataset_ids <- records %>%
+  group_indices(Metadata)
+records$dataset_id <- dataset_ids  
+```
+
+Let's also take a look at some titles and abstracts.
 
 ```{r message=FALSE, warning=FALSE}
 titles <- records %>%
@@ -65,20 +75,23 @@ titles <- records %>%
 titles
 ```
 
-### Extracting occurrence data
-
-Let's first create a new column for the `occurrenceID`, this will be used later to link together the measurements and occurrences.
-
 ```{r message=FALSE, warning=FALSE}
-records$id <- records$Occurrence$occurrenceID
-stopifnot(length(unique(records$id)) == nrow(records))
+abstracts <- records %>%
+  distinct(Metadata$abstract) %>%
+  pull("Metadata$abstract")
+
+abstracts
 ```
 
-Here I'm creating a subset for testing purposes. At the end of the notebook we will process all subsets.
+### Extracting occurrence data
+
+Let's first create a new ID column, this will be used later to link together the measurements and occurrences, and to select records by dataset. We cannot use `occurrenceID` here because these are not unique within the dataset.
 
 ```{r message=FALSE, warning=FALSE}
-records_test <- records %>%
-  filter(Metadata$title == titles[1])
+library(uuid)
+
+records$id <- UUIDgenerate(use.time = NA, n = nrow(records))
+stopifnot(length(unique(records$id)) == nrow(records))
 ```
 
 Now we can select and process the columns that will go into the occurrence table.
@@ -86,22 +99,27 @@ Now we can select and process the columns that will go into the occurrence table
 ```{r message=FALSE, warning=FALSE}
 extract_occurrences <- function(df) {
     df %>%
-      select("id", "Occurrence", "Event", "Location", "Identification", "Record-level", "Taxon") %>%
+      select("id", "dataset_id", "Occurrence", "Event", "Location", "Identification", "Record-level", "Taxon") %>%
       jsonlite::flatten() %>%
       rename_all(~str_replace(., ".*\\.", "")) %>%
       as_tibble()
 }
 
-occ <- extract_occurrences(records_test)
+occ <- extract_occurrences(records)
 ```
 
-### Cleaning up occurrence data
+### Initial cleanup of occurrence data
 
-First clean up any escaped newlines and fix `basisOfRecord`:
+First clean up any escaped newlines, empty strings, and placeholder values. Also fix `basisOfRecord`:
 
 ```{r message=FALSE, warning=FALSE}
+library(stringr)
+
 occ <- occ %>%
-  mutate_all(function(x) { gsub("\\n", "", x) }) %>%
+  mutate_all(~gsub("\\n", "", .)) %>%
+  mutate_all(~na_if(., "")) %>%
+  mutate(across(where(is.character), str_squish)) %>%
+  mutate_all(~replace(., . %in% c("indet", "Not Reported", "indet."), NA)) %>%
   mutate(basisOfRecord = "HumanObservation")
 ```
 
@@ -123,14 +141,24 @@ occ %>%
   rmarkdown::paged_table()
 ```
 
-Note that in some cases `scientificName` only contains the species epithet, this is something that should be fixed at ISA. Let's try to clean up the scientific names before we do taxon matching with WoRMS. Here I'm using the `gni_parse()` function from the `taxize` package, which connects to the [GNI](http://gni.globalnames.org/) name parser. If a name cannot be parsed, I'm keeping the original.
+So at least in the current version at the time of writing (May 2021) there are some quality issues for both fields.
+
+### Fixing taxonomy
+
+Let's try to clean up the scientific names before we do taxon matching with WoRMS. Here I'm using the `gni_parse()` function from the `taxize` package, which connects to the [GNI](http://gni.globalnames.org/) name parser. If a name cannot be parsed, I'm keeping the original.
+
+The first step is to create a list of all distinct names in the taxonomy columns.
+
+```{r message=FALSE, warning=FALSE}
+taxonomy <- occ %>%
+  select(phylum, class, order, family, genus, scientificName)
+names <- na.omit(unique(unlist(taxonomy)))
+```
+
+Then pass through the name parser:
 
 ```{r message=FALSE, warning=FALSE}
 library(taxize)
-library(purrr)
-
-names <- unique(occ$scientificName)
-names <- names[names != ""]
 
 clean_name <- function(name) {
   parsed <- tryCatch({
@@ -143,10 +171,10 @@ clean_name <- function(name) {
   })
 }
 
-names_clean <- unlist(map(names, clean_name))
+names_clean <- sapply(names, clean_name)  
 ```
 
-Now let's try taxon matching using the cleaned names.
+Now use the cleaned names for taxon matching:
 
 ```{r message=FALSE, warning=FALSE}
 library(worrms)
@@ -165,17 +193,30 @@ match_name <- function(name) {
   })
 }
 
-lsids <- unlist(map(names_clean, match_name))
+lsids <- sapply(names_clean, match_name)
+```
+
+Now we need to find the lowest taxonomic level at which we find a name. Note that this will result in records with less taxonomic resolution than intended. Ideally we would only match on `scientificName`. First translate the taxonomy columns to LSIDs:
+
+```{r message=FALSE, warning=FALSE}
+taxonomy_clean <- taxonomy %>%
+  mutate_all(~names_clean[.]) %>%
+  mutate_all(~lsids[.])
+
+taxonomy_clean
+```
+
+The find the most specific one for each row:
+
+```{r message=FALSE, warning=FALSE}
+taxonomy_clean <- taxonomy_clean %>%
+  mutate(best = coalesce(scientificName, genus, family, order, class))
 ```
 
 I'll use the resulting LSIDs to replace the provided `scientificNameIDs`.
 
 ```{r message=FALSE, warning=FALSE}
-names <- tibble(scientificName = names, lsid = lsids)
-occ <- occ %>%
-  left_join(names, by = "scientificName") %>%
-  select(-scientificNameID) %>%
-  rename(scientificNameID = lsid)
+occ$scientificNameID <- taxonomy_clean$best
 ```
 
 Let's take another look at the top `scientificName` and `scientificNameID` after mathing:
@@ -194,27 +235,41 @@ occ %>%
 ```{r message=FALSE, warning=FALSE}
 extract_mof <- function(df) {
     df %>%
-      select("id", "MeasurementOrFact") %>%
+      select("id", "dataset_id", "MeasurementOrFact") %>%
       jsonlite::flatten() %>%
       rename_all(~str_replace(., ".*\\.", "")) %>%
-      filter(measurementType != "") %>%
+      mutate(across(where(is.character), str_squish)) %>%
+      mutate_all(~na_if(., "")) %>%
+      filter(!is.na(measurementType) & !is.na(measurementValue)) %>%
       as_tibble()
 }
 
 mof <- extract_mof(records)
 mof
+ ```
+
+A large number of records appear to have empty values. To demonstrate this, let's take a look at the most common combinations of `measurementType` and `measurementValue`:
+
+```{r message=FALSE, warning=FALSE}
+mof %>%
+  group_by(measurementType, measurementValue) %>%
+  summarize(records = n()) %>%
+  arrange(desc(records)) %>%
+  head(10) %>%
+  knitr::kable()
 ```
+## Generating Darwin Core Archives
 
-## Generating EML
+### Generating EML
 
-As the metadata records are all the same within a dataset, let's take the first and use that to populate the EML. Note that the EML template is read from `eml.xml`:
+For demonstration purposes, I'm working with the dataset pertaining to the first record here. The EML template is read from `templates/eml.xml`:
 
 ```{r message=FALSE, warning=FALSE}
 library(readr)
 library(glue)
 
 generate_eml <- function(df) {
-  eml <- read_file("eml.xml")
+  eml <- read_file("templates/eml.xml")
   metadata <- df$Metadata[1,]
   firstname <- strsplit(metadata$Contact$name, " ")[[1]][1]
   lastname <- strsplit(metadata$Contact$name, " ")[[1]][2]
@@ -230,10 +285,10 @@ generate_eml <- function(df) {
   glue(eml)
 }
 
-generate_eml(records_test)
+generate_eml(records)
 ```
 
-## Generating an archive descriptor file
+### Generating an archive descriptor file
 
 The archive also needs to include a `meta.xml` file which describes the files in the archive and their relationships.
 
@@ -279,64 +334,89 @@ generate_meta <- function(occ, mof) {
   mof_lines[1] <- "<coreid index=\"0\" />"
   mof_lines <- paste0(mof_lines, collapse = "\n")
 
-  meta <- read_file("meta.xml")
+  meta <- read_file("templates/meta.xml")
   glue(meta)
 }
 
 generate_meta(occ, mof)
 ```
 
-## Bringing it all together
+### Bringing it all together
+
+Now we can generate an archive for each dataset. For now I'm adding the dataset ID to the title because there's only a single title within the entire dataset.
+
+While I'm generating datasets I'm also populating the RSS feed.
 
 ```{r message=FALSE, warning=FALSE}
-for (title in titles) {
+baseurl <- "https://datasets.obis.org/hosted/isa/"
+item_template <- read_file("templates/rss_item.xml")
+items <- list()
+shortnames <- list()
+pubdate <- format(Sys.time(), "%a, %d %b %Y %H:%M:%S %z")
 
+for (datasetid in unique(records$dataset_id)) {
+  
   dataset <- records %>%
-    filter(Metadata$title == title)
+    filter(dataset_id == datasetid) %>%
+    head(1)
+  
+  title <- paste0(dataset$Metadata$title, "_", datasetid)
+  abstract <- dataset$Metadata$abstract
+  shortname <- str_replace(tolower(title), "\\s", "_")
+  link <- paste0(baseurl, shortname, "/index.html")
+  dwca <- paste0(baseurl, shortname, "/", shortname, ".zip")
+  
+  item <- glue(item_template)
+  items[[datasetid]] <- item
+  shortnames[[datasetid]] <- shortname
+  
+  dataset_occ <- occ %>% filter(dataset_id == datasetid) 
+  dataset_mof <- mof %>% filter(dataset_id == datasetid) 
 
-  # occurrence
-    
-  occ <- extract_occurrences(dataset)
-  occ <- occ %>%
-    mutate_all(function(x) { gsub("\\n", "", x) }) %>%
-    mutate(basisOfRecord = "HumanObservation")
-  names <- unique(occ$scientificName)
-  names <- names[names != ""]
-  names_clean <- unlist(map(names, clean_name))
-  lsids <- unlist(map(names_clean, match_name))
-  names <- tibble(scientificName = names, lsid = lsids)
-  occ <- occ %>%
-    left_join(names, by = "scientificName") %>%
-    select(-scientificNameID) %>%
-    rename(scientificNameID = lsid)
-  
-  # mof
-  
-  mof <- extract_mof(dataset)
-  
-  # EML
-  
   eml <- generate_eml(dataset)
-  
-  # meta.xml
-  
   meta <- generate_meta(occ, mof)
   
-  # generate archive
-  
-  write.table(occ, file = "output/occurrence.txt", sep = "\t", row.names = FALSE, na = "", quote = FALSE)
-  write.table(mof, file = "output/extendedmeasurementorfact.txt", sep = "\t", row.names = FALSE, na = "", quote = FALSE)
-  writeLines(eml, "output/eml.xml")
-  writeLines(meta, "output/meta.xml")
+  file.remove(paste0("output/", shortname))
+  dir.create(paste0("output/", shortname))
+  write.table(dataset_occ, file = paste0("output/", shortname, "/occurrence.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
+  write.table(dataset_mof, file = paste0("output/", shortname, "/extendedmeasurementorfact.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
+  writeLines(eml, paste0("output/", shortname, "/eml.xml"))
+  writeLines(meta, paste0("output/", shortname, "/meta.xml"))
   
   files <- c("occurrence.txt", "extendedmeasurementorfact.txt", "eml.xml", "meta.xml")
-  setwd("output")
-  file.remove(glue("{title}.zip"))
-  zip(glue("{title}.zip"), files)
+  setwd(paste0("output/", shortname))
+  zip(glue("{shortname}.zip"), files)
   for (f in files) {
     file.remove(f)
   }
-  setwd("..")
+  setwd("../..")
 
 }
 ```
+
+## Data publishing
+
+### Generate RSS file
+
+```{r message=FALSE, warning=FALSE}
+items <- paste0(items, collapse = "\n")
+rss_template <- read_file("templates/rss.xml")
+
+title <- "International Seabed Authority"
+description <- "International Seabed Authority"
+link <- paste0(baseurl, "index.html")
+
+rss <- glue(rss_template)
+writeLines(rss, "output/rss.xml")
+```
+
+### Generate landing page
+
+```{r message=FALSE, warning=FALSE}
+index_template <- read_file("templates/index.html")
+content <- paste0(paste0("<li><a href=\"", shortnames, "\">", shortnames, "</a></li>"), collapse = "\n")
+index <- glue(index_template)
+writeLines(index, "output/index.html")
+```
+
+### Uploading to S3
