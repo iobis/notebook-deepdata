@@ -32,7 +32,7 @@ digraph boxes_and_circles {
   }
   ISA->notebook notebook->S3 S3->OBIS
 }
-", width = 400)
+", width = 600)
 ```
 
 ## Fetching the data from the ISA server
