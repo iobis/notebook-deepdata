@@ -1,0 +1,6 @@
+<item>
+  <title>{title}</title>
+  <link>{link}</link>
+  <ipt:dwca>{dwca}</ipt:dwca>
+  <pubDate>{pubdate}</pubDate>
+</item>

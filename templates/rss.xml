@@ -1,0 +1,10 @@
+
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:ipt="http://ipt.gbif.org/">
+  <channel>
+    <title>{title}</title>
+    <link>{link}</link>
+    <description>{description}</description>
+    {items}
+  </channel>
+</rss>

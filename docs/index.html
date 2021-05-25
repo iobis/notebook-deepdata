@@ -7,7 +7,7 @@
 
         <meta name="author" content="Pieter Provoost" />
     
-        <meta name="date" content="2021-05-24" />
+        <meta name="date" content="2021-05-25" />
     
     <title>ISA DeepData</title>
 
@@ -3102,6 +3102,7 @@ window.onload = function() {
         </ul>
         <nav role="navigation" id="toc">
           <ul>
+          <li><a href="#data-flow">Data flow</a></li>
           <li><a href="#fetching-the-data-from-the-isa-server">Fetching the data from the ISA server</a></li>
           <li><a href="#parsing-the-json-file">Parsing the JSON file</a></li>
           <li><a href="#generating-darwin-core-data-files">Generating Darwin Core data files</a>
@@ -3128,7 +3129,7 @@ window.onload = function() {
         <ul class="authors">
           <li class="divider"></li>
                                 <li><span><i class="glyphicon glyphicon-user"></i> Pieter Provoost</span></li>
-                                         <li><span><i class="glyphicon glyphicon-calendar"></i> 2021-05-24</span></li>
+                                         <li><span><i class="glyphicon glyphicon-calendar"></i> 2021-05-25</span></li>
                   </ul>     
       </div>
       <div class="book-body fixed">
@@ -3151,6 +3152,10 @@ window.onload = function() {
 <!-- Don't indent these lines or it will mess pre blocks indentation --> 
 <p>This notebook processes data from the <a href="https://www.isa.org.jm/">International Seabed Authority</a> (ISA) <a href="https://data.isa.org.jm/isa/map/">DeepData</a> database into Darwin Core archives.</p>
 <p>The code for this notebook is hosted at <a href="https://github.com/iobis/notebook-deepdata" class="uri">https://github.com/iobis/notebook-deepdata</a>.</p>
+<div id="data-flow" class="section level2">
+<h2>Data flow</h2>
+<p>Todo.</p>
+</div>
 <div id="fetching-the-data-from-the-isa-server" class="section level2">
 <h2>Fetching the data from the ISA server</h2>
 <p>The DeepData dataset is delivered to OBIS via FTP. Let’s list the files on the FTP server and download the most recent JSON file to a temporary directory. Credentials are stored in <code>env.txt</code>.</p>
@@ -3542,16 +3547,16 @@ window.onload = function() {
 <pre><code>## # A tibble: 12,330 x 6
 ##    id                 dataset_id measurementID measurementType  measurementValue
 ##    &lt;chr&gt;                   &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;            &lt;chr&gt;           
-##  1 07417698-fce2-416…          5 MUC204516398… Relative abunda… 11.9718309859155
-##  2 d2caf35c-725a-42f…          5 MUC204716398… Relative abunda… 0.7042253521126…
-##  3 caa1bb2f-be57-4fe…          5 MUC204916398… Relative abunda… 2.8169014084507 
-##  4 5dffdc50-139a-48b…          5 MUC205116398… Relative abunda… 0.7042253521126…
-##  5 38a200d6-2d65-45f…          5 MUC205516398… Relative abunda… 31.4814814814815
-##  6 11c9e7d0-4bae-46d…          5 MUC205716398… Relative abunda… 16.6666666666667
-##  7 1b8425f9-79c9-4b0…          5 MUC205916398… Relative abunda… 3.7037037037037 
-##  8 1f00f54a-9bea-48d…          5 MUC204016398… Relative abunda… 11.9718309859155
-##  9 7a790504-b433-4bb…          5 MUC204116398… Relative abunda… 5.63380281690141
-## 10 56d49829-638b-4cb…          5 MUC204316398… Relative abunda… 33.0985915492958
+##  1 b8a23319-0c6f-41e…          5 MUC204516398… Relative abunda… 11.9718309859155
+##  2 7a51c7f4-288a-4e2…          5 MUC204716398… Relative abunda… 0.7042253521126…
+##  3 9b55d1ff-9c83-4d9…          5 MUC204916398… Relative abunda… 2.8169014084507 
+##  4 0217ae4f-16a9-40a…          5 MUC205116398… Relative abunda… 0.7042253521126…
+##  5 2bab95b4-0cd2-470…          5 MUC205516398… Relative abunda… 31.4814814814815
+##  6 9dd2f469-9d4a-484…          5 MUC205716398… Relative abunda… 16.6666666666667
+##  7 51c78ea7-dc0c-469…          5 MUC205916398… Relative abunda… 3.7037037037037 
+##  8 8f990d78-0a90-48c…          5 MUC204016398… Relative abunda… 11.9718309859155
+##  9 ae1901cf-e25e-4b0…          5 MUC204116398… Relative abunda… 5.63380281690141
+## 10 ee847a59-aa56-40a…          5 MUC204316398… Relative abunda… 33.0985915492958
 ## # … with 12,320 more rows, and 1 more variable: measurementUnit &lt;chr&gt;</code></pre>
 <p>A large number of records appear to have empty values. To demonstrate this, let’s take a look at the most common combinations of <code>measurementType</code> and <code>measurementValue</code>:</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>mof <span class="op">%&gt;%</span></span>
@@ -3707,7 +3712,7 @@ window.onload = function() {
 ## &lt;additionalMetadata&gt;
 ## &lt;metadata&gt;
 ## &lt;gbif&gt;
-##   &lt;dateStamp&gt;2021-05-25T00:05:58+0200&lt;/dateStamp&gt;
+##   &lt;dateStamp&gt;2021-05-25T15:01:02+0200&lt;/dateStamp&gt;
 ##   &lt;hierarchyLevel&gt;dataset&lt;/hierarchyLevel&gt;
 ##   &lt;citation&gt;Paulo Bonifácio,Institut français de recherche pour l&#39;exploitation de la mer,Mar 2015 via DeepData, International Seabed Authority&lt;/citation&gt;
 ## &lt;/gbif&gt;
@@ -3833,62 +3838,79 @@ window.onload = function() {
 <div id="bringing-it-all-together" class="section level3">
 <h3>Bringing it all together</h3>
 <p>Now we can generate an archive for each dataset. For now I’m adding the dataset ID to the title because there’s only a single title within the entire dataset.</p>
-<p>While I’m generating datasets I’m also populating the RSS feed.</p>
+<p>While I’m generating datasets I’m also populating the RSS feed and creating dataset landing pages.</p>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>baseurl &lt;-<span class="st"> &quot;https://datasets.obis.org/hosted/isa/&quot;</span></span>
 <span id="cb29-2"><a href="#cb29-2"></a>item_template &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;templates/rss_item.xml&quot;</span>)</span>
-<span id="cb29-3"><a href="#cb29-3"></a>items &lt;-<span class="st"> </span><span class="kw">list</span>()</span>
-<span id="cb29-4"><a href="#cb29-4"></a>shortnames &lt;-<span class="st"> </span><span class="kw">list</span>()</span>
-<span id="cb29-5"><a href="#cb29-5"></a>pubdate &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%a, %d %b %Y %H:%M:%S %z&quot;</span>)</span>
-<span id="cb29-6"><a href="#cb29-6"></a></span>
-<span id="cb29-7"><a href="#cb29-7"></a><span class="cf">for</span> (datasetid <span class="cf">in</span> <span class="kw">unique</span>(records<span class="op">$</span>dataset_id)) {</span>
-<span id="cb29-8"><a href="#cb29-8"></a>  </span>
-<span id="cb29-9"><a href="#cb29-9"></a>  dataset &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
-<span id="cb29-10"><a href="#cb29-10"></a><span class="st">    </span><span class="kw">filter</span>(dataset_id <span class="op">==</span><span class="st"> </span>datasetid) <span class="op">%&gt;%</span></span>
-<span id="cb29-11"><a href="#cb29-11"></a><span class="st">    </span><span class="kw">head</span>(<span class="dv">1</span>)</span>
-<span id="cb29-12"><a href="#cb29-12"></a>  </span>
-<span id="cb29-13"><a href="#cb29-13"></a>  title &lt;-<span class="st"> </span><span class="kw">paste0</span>(dataset<span class="op">$</span>Metadata<span class="op">$</span>title, <span class="st">&quot;_&quot;</span>, datasetid)</span>
-<span id="cb29-14"><a href="#cb29-14"></a>  abstract &lt;-<span class="st"> </span>dataset<span class="op">$</span>Metadata<span class="op">$</span>abstract</span>
-<span id="cb29-15"><a href="#cb29-15"></a>  shortname &lt;-<span class="st"> </span><span class="kw">str_replace</span>(<span class="kw">tolower</span>(title), <span class="st">&quot;</span><span class="ch">\\</span><span class="st">s&quot;</span>, <span class="st">&quot;_&quot;</span>)</span>
-<span id="cb29-16"><a href="#cb29-16"></a>  link &lt;-<span class="st"> </span><span class="kw">paste0</span>(baseurl, shortname, <span class="st">&quot;/index.html&quot;</span>)</span>
-<span id="cb29-17"><a href="#cb29-17"></a>  dwca &lt;-<span class="st"> </span><span class="kw">paste0</span>(baseurl, shortname, <span class="st">&quot;/&quot;</span>, shortname, <span class="st">&quot;.zip&quot;</span>)</span>
-<span id="cb29-18"><a href="#cb29-18"></a>  </span>
-<span id="cb29-19"><a href="#cb29-19"></a>  item &lt;-<span class="st"> </span><span class="kw">glue</span>(item_template)</span>
-<span id="cb29-20"><a href="#cb29-20"></a>  items[[datasetid]] &lt;-<span class="st"> </span>item</span>
-<span id="cb29-21"><a href="#cb29-21"></a>  shortnames[[datasetid]] &lt;-<span class="st"> </span>shortname</span>
-<span id="cb29-22"><a href="#cb29-22"></a>  </span>
-<span id="cb29-23"><a href="#cb29-23"></a>  dataset_occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(dataset_id <span class="op">==</span><span class="st"> </span>datasetid) </span>
-<span id="cb29-24"><a href="#cb29-24"></a>  dataset_mof &lt;-<span class="st"> </span>mof <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(dataset_id <span class="op">==</span><span class="st"> </span>datasetid) </span>
-<span id="cb29-25"><a href="#cb29-25"></a></span>
-<span id="cb29-26"><a href="#cb29-26"></a>  eml &lt;-<span class="st"> </span><span class="kw">generate_eml</span>(dataset)</span>
-<span id="cb29-27"><a href="#cb29-27"></a>  meta &lt;-<span class="st"> </span><span class="kw">generate_meta</span>(occ, mof)</span>
-<span id="cb29-28"><a href="#cb29-28"></a>  </span>
-<span id="cb29-29"><a href="#cb29-29"></a>  <span class="kw">file.remove</span>(<span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname))</span>
-<span id="cb29-30"><a href="#cb29-30"></a>  <span class="kw">dir.create</span>(<span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname))</span>
-<span id="cb29-31"><a href="#cb29-31"></a>  <span class="kw">write.table</span>(dataset_occ, <span class="dt">file =</span> <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/occurrence.txt&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb29-32"><a href="#cb29-32"></a>  <span class="kw">write.table</span>(dataset_mof, <span class="dt">file =</span> <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/extendedmeasurementorfact.txt&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb29-33"><a href="#cb29-33"></a>  <span class="kw">writeLines</span>(eml, <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/eml.xml&quot;</span>))</span>
-<span id="cb29-34"><a href="#cb29-34"></a>  <span class="kw">writeLines</span>(meta, <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/meta.xml&quot;</span>))</span>
+<span id="cb29-3"><a href="#cb29-3"></a>landing_template &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;templates/index_dataset.html&quot;</span>)</span>
+<span id="cb29-4"><a href="#cb29-4"></a>items &lt;-<span class="st"> </span><span class="kw">list</span>()</span>
+<span id="cb29-5"><a href="#cb29-5"></a>shortnames &lt;-<span class="st"> </span><span class="kw">list</span>()</span>
+<span id="cb29-6"><a href="#cb29-6"></a>pubdate &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">Sys.time</span>(), <span class="st">&quot;%a, %d %b %Y %H:%M:%S %z&quot;</span>)</span>
+<span id="cb29-7"><a href="#cb29-7"></a></span>
+<span id="cb29-8"><a href="#cb29-8"></a><span class="cf">for</span> (datasetid <span class="cf">in</span> <span class="kw">unique</span>(records<span class="op">$</span>dataset_id)) {</span>
+<span id="cb29-9"><a href="#cb29-9"></a>  </span>
+<span id="cb29-10"><a href="#cb29-10"></a>  dataset &lt;-<span class="st"> </span>records <span class="op">%&gt;%</span></span>
+<span id="cb29-11"><a href="#cb29-11"></a><span class="st">    </span><span class="kw">filter</span>(dataset_id <span class="op">==</span><span class="st"> </span>datasetid) <span class="op">%&gt;%</span></span>
+<span id="cb29-12"><a href="#cb29-12"></a><span class="st">    </span><span class="kw">head</span>(<span class="dv">1</span>)</span>
+<span id="cb29-13"><a href="#cb29-13"></a>  </span>
+<span id="cb29-14"><a href="#cb29-14"></a>  title &lt;-<span class="st"> </span><span class="kw">paste0</span>(dataset<span class="op">$</span>Metadata<span class="op">$</span>title, <span class="st">&quot;_&quot;</span>, datasetid)</span>
+<span id="cb29-15"><a href="#cb29-15"></a>  abstract &lt;-<span class="st"> </span>dataset<span class="op">$</span>Metadata<span class="op">$</span>abstract</span>
+<span id="cb29-16"><a href="#cb29-16"></a>  shortname &lt;-<span class="st"> </span><span class="kw">str_replace</span>(<span class="kw">tolower</span>(title), <span class="st">&quot;</span><span class="ch">\\</span><span class="st">s&quot;</span>, <span class="st">&quot;_&quot;</span>)</span>
+<span id="cb29-17"><a href="#cb29-17"></a>  link &lt;-<span class="st"> </span><span class="kw">paste0</span>(baseurl, shortname, <span class="st">&quot;/index.html&quot;</span>)</span>
+<span id="cb29-18"><a href="#cb29-18"></a>  dwca &lt;-<span class="st"> </span><span class="kw">paste0</span>(baseurl, shortname, <span class="st">&quot;/&quot;</span>, shortname, <span class="st">&quot;.zip&quot;</span>)</span>
+<span id="cb29-19"><a href="#cb29-19"></a></span>
+<span id="cb29-20"><a href="#cb29-20"></a>  <span class="co"># clear dataset directory</span></span>
+<span id="cb29-21"><a href="#cb29-21"></a>    </span>
+<span id="cb29-22"><a href="#cb29-22"></a>  <span class="kw">unlink</span>(<span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname), <span class="dt">recursive =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb29-23"><a href="#cb29-23"></a>  <span class="kw">dir.create</span>(<span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname))</span>
+<span id="cb29-24"><a href="#cb29-24"></a></span>
+<span id="cb29-25"><a href="#cb29-25"></a>  <span class="co"># RSS feed items</span></span>
+<span id="cb29-26"><a href="#cb29-26"></a>  </span>
+<span id="cb29-27"><a href="#cb29-27"></a>  item &lt;-<span class="st"> </span><span class="kw">glue</span>(item_template)</span>
+<span id="cb29-28"><a href="#cb29-28"></a>  items[[datasetid]] &lt;-<span class="st"> </span>item</span>
+<span id="cb29-29"><a href="#cb29-29"></a>  </span>
+<span id="cb29-30"><a href="#cb29-30"></a>  <span class="co"># shortnames for the ISA landing page</span></span>
+<span id="cb29-31"><a href="#cb29-31"></a>  </span>
+<span id="cb29-32"><a href="#cb29-32"></a>  shortnames[[datasetid]] &lt;-<span class="st"> </span>shortname</span>
+<span id="cb29-33"><a href="#cb29-33"></a></span>
+<span id="cb29-34"><a href="#cb29-34"></a>  <span class="co"># dataset landing page</span></span>
 <span id="cb29-35"><a href="#cb29-35"></a>  </span>
-<span id="cb29-36"><a href="#cb29-36"></a>  files &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;occurrence.txt&quot;</span>, <span class="st">&quot;extendedmeasurementorfact.txt&quot;</span>, <span class="st">&quot;eml.xml&quot;</span>, <span class="st">&quot;meta.xml&quot;</span>)</span>
-<span id="cb29-37"><a href="#cb29-37"></a>  <span class="kw">setwd</span>(<span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname))</span>
-<span id="cb29-38"><a href="#cb29-38"></a>  <span class="kw">zip</span>(<span class="kw">glue</span>(<span class="st">&quot;{shortname}.zip&quot;</span>), files)</span>
-<span id="cb29-39"><a href="#cb29-39"></a>  <span class="cf">for</span> (f <span class="cf">in</span> files) {</span>
-<span id="cb29-40"><a href="#cb29-40"></a>    <span class="kw">file.remove</span>(f)</span>
-<span id="cb29-41"><a href="#cb29-41"></a>  }</span>
-<span id="cb29-42"><a href="#cb29-42"></a>  <span class="kw">setwd</span>(<span class="st">&quot;../..&quot;</span>)</span>
+<span id="cb29-36"><a href="#cb29-36"></a>  landing &lt;-<span class="st"> </span><span class="kw">glue</span>(landing_template)</span>
+<span id="cb29-37"><a href="#cb29-37"></a>  <span class="kw">writeLines</span>(landing, <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/index.html&quot;</span>))</span>
+<span id="cb29-38"><a href="#cb29-38"></a>  </span>
+<span id="cb29-39"><a href="#cb29-39"></a>  <span class="co"># archive  </span></span>
+<span id="cb29-40"><a href="#cb29-40"></a>  </span>
+<span id="cb29-41"><a href="#cb29-41"></a>  dataset_occ &lt;-<span class="st"> </span>occ <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(dataset_id <span class="op">==</span><span class="st"> </span>datasetid) </span>
+<span id="cb29-42"><a href="#cb29-42"></a>  dataset_mof &lt;-<span class="st"> </span>mof <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(dataset_id <span class="op">==</span><span class="st"> </span>datasetid) </span>
 <span id="cb29-43"><a href="#cb29-43"></a></span>
-<span id="cb29-44"><a href="#cb29-44"></a>}</span></code></pre></div>
+<span id="cb29-44"><a href="#cb29-44"></a>  eml &lt;-<span class="st"> </span><span class="kw">generate_eml</span>(dataset)</span>
+<span id="cb29-45"><a href="#cb29-45"></a>  meta &lt;-<span class="st"> </span><span class="kw">generate_meta</span>(occ, mof)</span>
+<span id="cb29-46"><a href="#cb29-46"></a>  </span>
+<span id="cb29-47"><a href="#cb29-47"></a>  <span class="kw">write.table</span>(dataset_occ, <span class="dt">file =</span> <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/occurrence.txt&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb29-48"><a href="#cb29-48"></a>  <span class="kw">write.table</span>(dataset_mof, <span class="dt">file =</span> <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/extendedmeasurementorfact.txt&quot;</span>), <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>, <span class="dt">na =</span> <span class="st">&quot;&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb29-49"><a href="#cb29-49"></a>  <span class="kw">writeLines</span>(eml, <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/eml.xml&quot;</span>))</span>
+<span id="cb29-50"><a href="#cb29-50"></a>  <span class="kw">writeLines</span>(meta, <span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname, <span class="st">&quot;/meta.xml&quot;</span>))</span>
+<span id="cb29-51"><a href="#cb29-51"></a>  </span>
+<span id="cb29-52"><a href="#cb29-52"></a>  files &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;occurrence.txt&quot;</span>, <span class="st">&quot;extendedmeasurementorfact.txt&quot;</span>, <span class="st">&quot;eml.xml&quot;</span>, <span class="st">&quot;meta.xml&quot;</span>)</span>
+<span id="cb29-53"><a href="#cb29-53"></a>  <span class="kw">setwd</span>(<span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, shortname))</span>
+<span id="cb29-54"><a href="#cb29-54"></a>  <span class="kw">zip</span>(<span class="kw">glue</span>(<span class="st">&quot;{shortname}.zip&quot;</span>), files)</span>
+<span id="cb29-55"><a href="#cb29-55"></a>  <span class="cf">for</span> (f <span class="cf">in</span> files) {</span>
+<span id="cb29-56"><a href="#cb29-56"></a>    <span class="kw">file.remove</span>(f)</span>
+<span id="cb29-57"><a href="#cb29-57"></a>  }</span>
+<span id="cb29-58"><a href="#cb29-58"></a>  <span class="kw">setwd</span>(<span class="st">&quot;../..&quot;</span>)</span>
+<span id="cb29-59"><a href="#cb29-59"></a></span>
+<span id="cb29-60"><a href="#cb29-60"></a>}</span></code></pre></div>
 </div>
 </div>
 <div id="data-publishing" class="section level2">
 <h2>Data publishing</h2>
+<p>In this section all files are uploaded to an S3 bucket. A list of datasets is visible at <a href="https://datasets.obis.org/hosted/isa/index.html">https://datasets.obis.org/hosted/isa/index.html</a>, and an <a href="https://datasets.obis.org/hosted/isa/rss.xml">RSS file</a> is available for the OBIS harvester.</p>
 <div id="generate-rss-file" class="section level3">
 <h3>Generate RSS file</h3>
 <div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>items &lt;-<span class="st"> </span><span class="kw">paste0</span>(items, <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
 <span id="cb30-2"><a href="#cb30-2"></a>rss_template &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;templates/rss.xml&quot;</span>)</span>
 <span id="cb30-3"><a href="#cb30-3"></a></span>
-<span id="cb30-4"><a href="#cb30-4"></a>title &lt;-<span class="st"> &quot;International Seabed Authority&quot;</span></span>
-<span id="cb30-5"><a href="#cb30-5"></a>description &lt;-<span class="st"> &quot;International Seabed Authority&quot;</span></span>
+<span id="cb30-4"><a href="#cb30-4"></a>title &lt;-<span class="st"> &quot;International Seabed Authority (ISA)&quot;</span></span>
+<span id="cb30-5"><a href="#cb30-5"></a>description &lt;-<span class="st"> &quot;International Seabed Authority (ISA)&quot;</span></span>
 <span id="cb30-6"><a href="#cb30-6"></a>link &lt;-<span class="st"> </span><span class="kw">paste0</span>(baseurl, <span class="st">&quot;index.html&quot;</span>)</span>
 <span id="cb30-7"><a href="#cb30-7"></a></span>
 <span id="cb30-8"><a href="#cb30-8"></a>rss &lt;-<span class="st"> </span><span class="kw">glue</span>(rss_template)</span>
@@ -3897,12 +3919,24 @@ window.onload = function() {
 <div id="generate-landing-page" class="section level3">
 <h3>Generate landing page</h3>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a>index_template &lt;-<span class="st"> </span><span class="kw">read_file</span>(<span class="st">&quot;templates/index.html&quot;</span>)</span>
-<span id="cb31-2"><a href="#cb31-2"></a>content &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="kw">paste0</span>(<span class="st">&quot;&lt;li&gt;&lt;a href=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, shortnames, <span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">&gt;&quot;</span>, shortnames, <span class="st">&quot;&lt;/a&gt;&lt;/li&gt;&quot;</span>), <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb31-2"><a href="#cb31-2"></a>content &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="kw">paste0</span>(<span class="st">&quot;&lt;li&gt;&lt;a href=</span><span class="ch">\&quot;</span><span class="st">&quot;</span>, shortnames, <span class="st">&quot;/index.html</span><span class="ch">\&quot;</span><span class="st">&gt;&quot;</span>, shortnames, <span class="st">&quot;&lt;/a&gt;&lt;/li&gt;&quot;</span>), <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span>
 <span id="cb31-3"><a href="#cb31-3"></a>index &lt;-<span class="st"> </span><span class="kw">glue</span>(index_template)</span>
 <span id="cb31-4"><a href="#cb31-4"></a><span class="kw">writeLines</span>(index, <span class="st">&quot;output/index.html&quot;</span>)</span></code></pre></div>
 </div>
 <div id="uploading-to-s3" class="section level3">
 <h3>Uploading to S3</h3>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="kw">library</span>(<span class="st">&quot;aws.s3&quot;</span>)</span>
+<span id="cb32-2"><a href="#cb32-2"></a></span>
+<span id="cb32-3"><a href="#cb32-3"></a><span class="kw">delete_object</span>(<span class="st">&quot;hosted/isa/&quot;</span>, <span class="dt">bucket =</span> <span class="st">&quot;obis-datasets&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>files &lt;-<span class="st"> </span><span class="kw">list.files</span>(<span class="st">&quot;output&quot;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>, <span class="dt">recursive =</span> <span class="ot">TRUE</span>, <span class="dt">include.dirs =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb34-2"><a href="#cb34-2"></a></span>
+<span id="cb34-3"><a href="#cb34-3"></a><span class="cf">for</span> (file <span class="cf">in</span> files) {</span>
+<span id="cb34-4"><a href="#cb34-4"></a>  folder &lt;-<span class="st"> </span><span class="kw">str_replace</span>(<span class="kw">dirname</span>(file), <span class="st">&quot;output&quot;</span>, <span class="st">&quot;hosted/isa&quot;</span>)</span>
+<span id="cb34-5"><a href="#cb34-5"></a>  target &lt;-<span class="st"> </span><span class="kw">str_replace</span>(file, <span class="st">&quot;output&quot;</span>, <span class="st">&quot;hosted/isa&quot;</span>)</span>
+<span id="cb34-6"><a href="#cb34-6"></a>  <span class="kw">message</span>(target)</span>
+<span id="cb34-7"><a href="#cb34-7"></a>  <span class="kw">put_object</span>(file, <span class="dt">object =</span> target, <span class="dt">bucket =</span> <span class="st">&quot;obis-datasets&quot;</span>, <span class="dt">acl =</span> <span class="st">&quot;public-read&quot;</span>)</span>
+<span id="cb34-8"><a href="#cb34-8"></a>}</span></code></pre></div>
 </div>
 </div>
 

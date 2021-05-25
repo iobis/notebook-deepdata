@@ -14,6 +14,27 @@ This notebook processes data from the [International Seabed Authority](https://w
 
 The code for this notebook is hosted at https://github.com/iobis/notebook-deepdata.
 
+## Data flow
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(DiagrammeR)
+
+grViz("
+digraph boxes_and_circles {
+  graph [overlap = true, fontsize = 10]
+  node [shape = box, fontname = Helvetica, fillcolor = Gray95, style = filled]
+  ISA [label = 'ISA FTP'] ; notebook [label = 'R notebook'] ; S3 [label = 'S3 storage'] ; OBIS [label = 'OBIS harvester']
+  node [shape = circle, fontname = Helvetica]
+  a [label = 'dataset'] ; b [label = 'dataset'] ; c [label = 'dataset'] ; d [label = 'dataset']
+  subgraph cluster1 {
+    node [fixedsize = true, width = 3]
+    S3->{a b c d}
+  }
+  ISA->notebook notebook->S3 S3->OBIS
+}
+")
+```
+
 ## Fetching the data from the ISA server
 
 The DeepData dataset is delivered to OBIS via FTP. Let's list the files on the FTP server and download the most recent JSON file to a temporary directory. Credentials are stored in `env.txt`.
@@ -246,7 +267,7 @@ extract_mof <- function(df) {
 
 mof <- extract_mof(records)
 mof
- ```
+```
 
 A large number of records appear to have empty values. To demonstrate this, let's take a look at the most common combinations of `measurementType` and `measurementValue`:
 
@@ -345,11 +366,12 @@ generate_meta(occ, mof)
 
 Now we can generate an archive for each dataset. For now I'm adding the dataset ID to the title because there's only a single title within the entire dataset.
 
-While I'm generating datasets I'm also populating the RSS feed.
+While I'm generating datasets I'm also populating the RSS feed and creating dataset landing pages.
 
 ```{r message=FALSE, warning=FALSE}
 baseurl <- "https://datasets.obis.org/hosted/isa/"
 item_template <- read_file("templates/rss_item.xml")
+landing_template <- read_file("templates/index_dataset.html")
 items <- list()
 shortnames <- list()
 pubdate <- format(Sys.time(), "%a, %d %b %Y %H:%M:%S %z")
@@ -365,10 +387,27 @@ for (datasetid in unique(records$dataset_id)) {
   shortname <- str_replace(tolower(title), "\\s", "_")
   link <- paste0(baseurl, shortname, "/index.html")
   dwca <- paste0(baseurl, shortname, "/", shortname, ".zip")
+
+  # clear dataset directory
+    
+  unlink(paste0("output/", shortname), recursive = TRUE)
+  dir.create(paste0("output/", shortname))
+
+  # RSS feed items
   
   item <- glue(item_template)
   items[[datasetid]] <- item
+  
+  # shortnames for the ISA landing page
+  
   shortnames[[datasetid]] <- shortname
+
+  # dataset landing page
+  
+  landing <- glue(landing_template)
+  writeLines(landing, paste0("output/", shortname, "/index.html"))
+  
+  # archive  
   
   dataset_occ <- occ %>% filter(dataset_id == datasetid) 
   dataset_mof <- mof %>% filter(dataset_id == datasetid) 
@@ -376,8 +415,6 @@ for (datasetid in unique(records$dataset_id)) {
   eml <- generate_eml(dataset)
   meta <- generate_meta(occ, mof)
   
-  file.remove(paste0("output/", shortname))
-  dir.create(paste0("output/", shortname))
   write.table(dataset_occ, file = paste0("output/", shortname, "/occurrence.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
   write.table(dataset_mof, file = paste0("output/", shortname, "/extendedmeasurementorfact.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
   writeLines(eml, paste0("output/", shortname, "/eml.xml"))
@@ -396,14 +433,16 @@ for (datasetid in unique(records$dataset_id)) {
 
 ## Data publishing
 
+In this section all files are uploaded to an S3 bucket. A list of datasets is visible at [https://datasets.obis.org/hosted/isa/index.html](https://datasets.obis.org/hosted/isa/index.html), and an [RSS file](https://datasets.obis.org/hosted/isa/rss.xml) is available for the OBIS harvester.
+
 ### Generate RSS file
 
 ```{r message=FALSE, warning=FALSE}
 items <- paste0(items, collapse = "\n")
 rss_template <- read_file("templates/rss.xml")
 
-title <- "International Seabed Authority"
-description <- "International Seabed Authority"
+title <- "International Seabed Authority (ISA)"
+description <- "International Seabed Authority (ISA)"
 link <- paste0(baseurl, "index.html")
 
 rss <- glue(rss_template)
@@ -414,9 +453,24 @@ writeLines(rss, "output/rss.xml")
 
 ```{r message=FALSE, warning=FALSE}
 index_template <- read_file("templates/index.html")
-content <- paste0(paste0("<li><a href=\"", shortnames, "\">", shortnames, "</a></li>"), collapse = "\n")
+content <- paste0(paste0("<li><a href=\"", shortnames, "/index.html\">", shortnames, "</a></li>"), collapse = "\n")
 index <- glue(index_template)
 writeLines(index, "output/index.html")
 ```
 
 ### Uploading to S3
+
+```{r message=FALSE, warning=FALSE}
+library("aws.s3")
+
+delete_object("hosted/isa/", bucket = "obis-datasets")
+files <- list.files("output", full.names = TRUE, recursive = TRUE, include.dirs = FALSE)
+
+for (file in files) {
+  folder <- str_replace(dirname(file), "output", "hosted/isa")
+  target <- str_replace(file, "output", "hosted/isa")
+  message(target)
+  put_object(file, object = target, bucket = "obis-datasets", acl = "public-read")
+}
+```
+

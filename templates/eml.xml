@@ -1,0 +1,66 @@
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1"
+  xmlns:dc="http://purl.org/dc/terms/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd"
+  packageId="{packageid}" system="http://gbif.org" scope="system"
+  xml:lang="eng">
+
+<dataset>
+  <title xml:lang="eng">{title}</title>
+  <pubDate>{pubdate}</pubDate>
+  <language>eng</language>
+  <abstract>
+    <para>{abstract}</para>
+  </abstract>
+  <keywordSet>
+    <keyword>Occurrence</keyword>
+    <keywordThesaurus>GBIF Dataset Type Vocabulary: http://rs.gbif.org/vocabulary/gbif/dataset_type.xml</keywordThesaurus>
+  </keywordSet>
+  <intellectualRights>
+    <para>This work is licensed under a <ulink url="http://creativecommons.org/licenses/by/4.0/legalcode"><citetitle>Creative Commons Attribution (CC-BY) 4.0 License</citetitle></ulink>.</para>
+  </intellectualRights>
+  <maintenance>
+    <description>
+      <para></para>
+    </description>
+    <maintenanceUpdateFrequency>unkown</maintenanceUpdateFrequency>
+  </maintenance>
+  <creator>
+    <individualName>
+    <givenName>{firstname}</givenName>
+    <surName>{lastname}</surName>
+    </individualName>
+    <organizationName>{organization}</organizationName>
+    <positionName>{position}</positionName>
+    <electronicMailAddress>{email}</electronicMailAddress>
+  </creator>
+  <metadataProvider>
+    <individualName>
+    <givenName>{firstname}</givenName>
+    <surName>{lastname}</surName>
+    </individualName>
+    <organizationName>{organization}</organizationName>
+    <positionName>{position}</positionName>
+    <electronicMailAddress>{email}</electronicMailAddress>
+  </metadataProvider>
+  <contact>
+    <individualName>
+    <givenName>{firstname}</givenName>
+    <surName>{lastname}</surName>
+    </individualName>
+    <organizationName>{organization}</organizationName>
+    <positionName>{position}</positionName>
+    <electronicMailAddress>{email}</electronicMailAddress>
+  </contact>
+</dataset>
+<additionalMetadata>
+<metadata>
+<gbif>
+  <dateStamp>{datestamp}</dateStamp>
+  <hierarchyLevel>dataset</hierarchyLevel>
+  <citation>{citation}</citation>
+</gbif>
+</metadata>
+</additionalMetadata>
+</eml:eml>
+
