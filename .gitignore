@@ -2,4 +2,5 @@
 env.txt
 *.json
 output
+index_cache
 

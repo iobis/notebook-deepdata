@@ -10,7 +10,7 @@ knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs") })  
 ---
 
-This notebook processes data from the [International Seabed Authority](https://www.isa.org.jm/) (ISA) [DeepData](https://data.isa.org.jm/isa/map/) database into Darwin Core archives.
+This notebook processes data from the [International Seabed Authority](https://www.isa.org.jm/) (ISA) [DeepData](https://data.isa.org.jm/isa/map/) database into Darwin Core archives. The resulting datasets are hosted at [https://datasets.obis.org/hosted/isa/index.html](https://datasets.obis.org/hosted/isa/index.html).
 
 The code for this notebook is hosted at https://github.com/iobis/notebook-deepdata.
 
@@ -32,7 +32,7 @@ digraph boxes_and_circles {
   }
   ISA->notebook notebook->S3 S3->OBIS
 }
-")
+", width = 400)
 ```
 
 ## Fetching the data from the ISA server
@@ -50,7 +50,6 @@ res <- getURL(url, verbose = TRUE, ftp.use.epsv = FALSE, dirlistonly = TRUE)
 
 filenames <- unlist(strsplit(res, "\\n"))
 filenames <- sort(filenames[str_detect(filenames, ".json")], decreasing = TRUE)
-
 
 if (length(filenames) != 1) {
   stop("Unexpected number of files found")
@@ -178,7 +177,7 @@ names <- na.omit(unique(unlist(taxonomy)))
 
 Then pass through the name parser:
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, cache=TRUE}
 library(taxize)
 
 clean_name <- function(name) {
@@ -197,7 +196,7 @@ names_clean <- sapply(names, clean_name)
 
 Now use the cleaned names for taxon matching:
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, cache=TRUE}
 library(worrms)
 
 match_name <- function(name) {
@@ -460,7 +459,7 @@ writeLines(index, "output/index.html")
 
 ### Uploading to S3
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, results='hide'}
 library("aws.s3")
 
 delete_object("hosted/isa/", bucket = "obis-datasets")
