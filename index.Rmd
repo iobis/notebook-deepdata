@@ -62,7 +62,7 @@ download.file(file_url, temp_file)
 
 ## Parsing the JSON file
 
-Earlier versions of the file were encoded in the non-standard `ISO-8859-1`, requiring the need to use `readLines` before parsing the data with the jsonlite package, but that seems to be fixed now.
+Earlier versions of the file were encoded in the non-standard `ISO-8859-1`, requiring the need to use `readLines` before parsing the data with the jsonlite package, but that is fixed now.
 
 ```{r message=FALSE, warning=FALSE}
 library(jsonlite)
@@ -77,30 +77,33 @@ records <- fromJSON(lines, simplifyDataFrame = TRUE)$DEEPDATA %>%
 
 ## Generating Darwin Core data files
 
-We can now extract a list of distinct datasets from the data frame, and generate a Darwin Core archive for each dataset. I'm using `group_indices()` to assign a unique dataset identifier to each record.
+We can now extract a list of distinct datasets from the data frame, and generate a Darwin Core archive for each dataset. Let's first generate dataset identifiers from the dataset titles for later use in the dataset URLs. To account for possible future changes to dataset titles, I'm removing or fixing some words in the titles. The result should be that identifiers do not change when typos are fixed in the future.
 
 ```{r message=FALSE, warning=FALSE}
-dataset_ids <- records %>%
-  group_indices(Metadata)
-records$dataset_id <- dataset_ids  
-```
+library(knitr)
 
-Let's also take a look at some titles and abstracts.
-
-```{r message=FALSE, warning=FALSE}
 titles <- records %>%
   distinct(Metadata$title) %>%
   pull("Metadata$title")
 
-titles
-```
+identifiers <- titles %>%
+  tolower(.) %>%
+  str_replace(., "meiofaun$", "meiofauna") %>%
+  str_replace(., "templaye", "template") %>%
+  str_replace(., "template", "") %>%
+  str_replace(., "biodiveristy", "biodiversity") %>%
+  str_replace(., "macrfaun$", "macrofauna") %>%
+  str_replace(., "meofauna", "meiofauna") %>%
+  str_replace(., "meiobent$", "meiobenthos") %>%
+  str_replace(., "-", " ") %>%
+  str_squish(.) %>%
+  str_replace_all(., "\\s", "_")
 
-```{r message=FALSE, warning=FALSE}
-abstracts <- records %>%
-  distinct(Metadata$abstract) %>%
-  pull("Metadata$abstract")
+stopifnot(length(unique(titles)) == length(unique(identifiers)))
+records$dataset_id <- identifiers[match(records$Metadata$title, titles)]
 
-abstracts
+data.frame(titles, identifiers) %>%
+  kable()
 ```
 
 ### Extracting occurrence data
@@ -130,7 +133,7 @@ occ <- extract_occurrences(records)
 
 ### Initial cleanup of occurrence data
 
-First clean up any escaped newlines, empty strings, and placeholder values. Also fix `basisOfRecord`:
+First clean up any escaped newlines, empty strings, and placeholder values. Also fix `basisOfRecord` and convert coordinates to numeric values:
 
 ```{r message=FALSE, warning=FALSE}
 library(stringr)
@@ -140,7 +143,17 @@ occ <- occ %>%
   mutate_all(~na_if(., "")) %>%
   mutate(across(where(is.character), str_squish)) %>%
   mutate_all(~replace(., . %in% c("indet", "Not Reported", "indet."), NA)) %>%
-  mutate(basisOfRecord = "HumanObservation")
+  mutate(basisOfRecord = "HumanObservation") %>%
+  mutate(
+    decimalLongitude = as.numeric(decimalLongitude),
+    decimalLatitude = as.numeric(decimalLatitude)
+  )
+```
+
+Plotting the occurrence on a map reveals that some coordinates have issues:
+
+```{r}
+robis::map_ggplot(occ)
 ```
 
 Let's take a look at `scientificName` and `scientificNameID`.
@@ -268,7 +281,7 @@ mof <- extract_mof(records)
 mof
 ```
 
-A large number of records appear to have empty values. To demonstrate this, let's take a look at the most common combinations of `measurementType` and `measurementValue`:
+A number of records appear to have empty values. To demonstrate this, let's take a look at the most common combinations of `measurementType` and `measurementValue`:
 
 ```{r message=FALSE, warning=FALSE}
 mof %>%
@@ -363,48 +376,45 @@ generate_meta(occ, mof)
 
 ### Bringing it all together
 
-Now we can generate an archive for each dataset. For now I'm adding the dataset ID to the title because there's only a single title within the entire dataset.
-
-While I'm generating datasets I'm also populating the RSS feed and creating dataset landing pages.
+Now we can generate an archive for each dataset. While I'm generating datasets I'm also populating the RSS feed and creating dataset landing pages.
 
 ```{r message=FALSE, warning=FALSE}
 baseurl <- "https://datasets.obis.org/hosted/isa/"
 item_template <- read_file("templates/rss_item.xml")
 landing_template <- read_file("templates/index_dataset.html")
 items <- list()
-shortnames <- list()
 pubdate <- format(Sys.time(), "%a, %d %b %Y %H:%M:%S %z")
 
-for (datasetid in unique(records$dataset_id)) {
+unlink("output", recursive = TRUE)
+dir.create("output")
+
+datasetids <- unique(records$dataset_id)
+
+for (datasetid in datasetids) {
   
   dataset <- records %>%
     filter(dataset_id == datasetid) %>%
     head(1)
   
-  title <- paste0(dataset$Metadata$title, "_", datasetid)
+  title <- dataset$Metadata$title
   abstract <- dataset$Metadata$abstract
-  shortname <- str_replace(tolower(title), "\\s", "_")
-  link <- paste0(baseurl, shortname, "/index.html")
-  dwca <- paste0(baseurl, shortname, "/", shortname, ".zip")
+  link <- paste0(baseurl, datasetid, "/index.html")
+  dwca <- paste0(baseurl, datasetid, "/", datasetid, ".zip")
 
   # clear dataset directory
     
-  unlink(paste0("output/", shortname), recursive = TRUE)
-  dir.create(paste0("output/", shortname))
+  unlink(paste0("output/", datasetid), recursive = TRUE)
+  dir.create(paste0("output/", datasetid))
 
   # RSS feed items
   
   item <- glue(item_template)
   items[[datasetid]] <- item
   
-  # shortnames for the ISA landing page
-  
-  shortnames[[datasetid]] <- shortname
-
   # dataset landing page
   
   landing <- glue(landing_template)
-  writeLines(landing, paste0("output/", shortname, "/index.html"))
+  writeLines(landing, paste0("output/", datasetid, "/index.html"))
   
   # archive  
   
@@ -414,14 +424,14 @@ for (datasetid in unique(records$dataset_id)) {
   eml <- generate_eml(dataset)
   meta <- generate_meta(occ, mof)
   
-  write.table(dataset_occ, file = paste0("output/", shortname, "/occurrence.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
-  write.table(dataset_mof, file = paste0("output/", shortname, "/extendedmeasurementorfact.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
-  writeLines(eml, paste0("output/", shortname, "/eml.xml"))
-  writeLines(meta, paste0("output/", shortname, "/meta.xml"))
+  write.table(dataset_occ, file = paste0("output/", datasetid, "/occurrence.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
+  write.table(dataset_mof, file = paste0("output/", datasetid, "/extendedmeasurementorfact.txt"), sep = "\t", row.names = FALSE, na = "", quote = FALSE)
+  writeLines(eml, paste0("output/", datasetid, "/eml.xml"))
+  writeLines(meta, paste0("output/", datasetid, "/meta.xml"))
   
   files <- c("occurrence.txt", "extendedmeasurementorfact.txt", "eml.xml", "meta.xml")
-  setwd(paste0("output/", shortname))
-  zip(glue("{shortname}.zip"), files)
+  setwd(paste0("output/", datasetid))
+  zip(glue("{datasetid}.zip"), files)
   for (f in files) {
     file.remove(f)
   }
@@ -452,7 +462,7 @@ writeLines(rss, "output/rss.xml")
 
 ```{r message=FALSE, warning=FALSE}
 index_template <- read_file("templates/index.html")
-content <- paste0(paste0("<li><a href=\"", shortnames, "/index.html\">", shortnames, "</a></li>"), collapse = "\n")
+content <- paste0(paste0("<li><a href=\"", datasetids, "/index.html\">", datasetids, "</a></li>"), collapse = "\n")
 index <- glue(index_template)
 writeLines(index, "output/index.html")
 ```
@@ -472,4 +482,3 @@ for (file in files) {
   put_object(file, object = target, bucket = "obis-datasets", acl = "public-read")
 }
 ```
-
