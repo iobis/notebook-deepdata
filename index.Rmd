@@ -395,7 +395,14 @@ for (datasetid in datasetids) {
   dataset <- records %>%
     filter(dataset_id == datasetid) %>%
     head(1)
-  
+
+  dataset$Metadata$abstract <- dataset$Metadata$abstract %>%
+    str_replace(., "&", "&amp;") %>%
+    str_replace(., ">", "&gt;") %>%
+    str_replace(., "<", "&lt;") %>%
+    str_replace(., "'", "&apos;") %>%
+    str_replace(., "\"", "&quot;")
+
   title <- dataset$Metadata$title
   abstract <- dataset$Metadata$abstract
   link <- paste0(baseurl, datasetid, "/index.html")
