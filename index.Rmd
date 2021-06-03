@@ -150,7 +150,7 @@ occ <- occ %>%
   )
 ```
 
-Plotting the occurrence on a map reveals that some coordinates have issues:
+Let's check for coordinates issues:
 
 ```{r}
 robis::map_ggplot(occ)
@@ -174,7 +174,7 @@ occ %>%
   rmarkdown::paged_table()
 ```
 
-So at least in the current version at the time of writing (May 2021) there are some quality issues for both fields.
+So at least in the current version at the time of writing (June 2021) there are some quality issues for `scientificName`.
 
 ### Fixing taxonomy
 
@@ -476,7 +476,7 @@ writeLines(index, "output/index.html")
 
 ### Uploading to S3
 
-```{r message=FALSE, warning=FALSE, results='hide'}
+```{r message=FALSE, warning=FALSE, results='hide', eval=TRUE}
 library("aws.s3")
 
 delete_object("hosted/isa/", bucket = "obis-datasets")
