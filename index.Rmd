@@ -304,11 +304,19 @@ library(glue)
 generate_eml <- function(df) {
   eml <- read_file("templates/eml.xml")
   metadata <- df$Metadata[1,]
-  firstname <- strsplit(metadata$Contact$name, " ")[[1]][1]
-  lastname <- strsplit(metadata$Contact$name, " ")[[1]][2]
-  organization <- metadata$Contact$organisation
-  email <- metadata$Contact$email
-  position <- metadata$Contact$position
+
+  firstname <- strsplit(metadata$Creator$name, " ")[[1]][1]
+  lastname <- strsplit(metadata$Creator$name, " ")[[1]][2]
+  organization <- metadata$Creator$organisation
+  email <- metadata$Creator$email
+  position <- metadata$Creator$position
+
+  creator_firstname <- ""
+  creator_lastname <- ""
+  creator_organization <- metadata$Contact$organisation
+  creator_email <- ""
+  creator_position <- ""
+
   abstract <- metadata$abstract
   title <- metadata$title
   citation <- metadata$citation

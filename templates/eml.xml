@@ -27,12 +27,12 @@
   </maintenance>
   <creator>
     <individualName>
-    <givenName>{firstname}</givenName>
-    <surName>{lastname}</surName>
+    <givenName>{creator_firstname}</givenName>
+    <surName>{creator_lastname}</surName>
     </individualName>
-    <organizationName>{organization}</organizationName>
-    <positionName>{position}</positionName>
-    <electronicMailAddress>{email}</electronicMailAddress>
+    <organizationName>{creator_organization}</organizationName>
+    <positionName>{creator_position}</positionName>
+    <electronicMailAddress>{creator_email}</electronicMailAddress>
   </creator>
   <metadataProvider>
     <individualName>
