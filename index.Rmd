@@ -23,55 +23,39 @@ grViz("
 digraph boxes_and_circles {
   graph [overlap = true, fontsize = 10]
   node [shape = box, fontname = Helvetica, fillcolor = Gray95, style = filled]
-  ISA [label = 'ISA FTP'] ; notebook [label = 'R notebook'] ; S3 [label = 'S3 storage'] ; OBIS [label = 'OBIS harvester']
+  ISA [label = 'ISA'] ; S3upload [label = 'S3 storage (upload)'] ; notebook [label = 'R notebook'] ; S3 [label = 'S3 storage (hosted)'] ; OBIS [label = 'OBIS harvester']
   node [shape = circle, fontname = Helvetica]
   a [label = 'dataset'] ; b [label = 'dataset'] ; c [label = 'dataset'] ; d [label = 'dataset']
   subgraph cluster1 {
     node [fixedsize = true, width = 3]
     S3->{a b c d}
   }
-  ISA->notebook notebook->S3 S3->OBIS
+  ISA->S3upload->notebook notebook->S3 a->OBIS b->OBIS c->OBIS d->OBIS
 }
 ", width = 600)
 ```
 
-## Fetching the data from the ISA server
+## Reading the data from S3
 
-The DeepData dataset is delivered to OBIS via FTP. Let's list the files on the FTP server and download the most recent JSON file to a temporary directory. Credentials are stored in `env.txt`.
+The DeepData dataset is delivered to OBIS via S3. Credentials are stored in `env.txt`. Earlier versions of the file were encoded in the non-standard `ISO-8859-1`, requiring the need to use `readLines` before parsing the data with the jsonlite package, but that is fixed now.
 
 ```{r message=FALSE, warning=FALSE}
 require(RCurl)
 library(stringr)
 library(dplyr)
+library("aws.s3")
 
 readRenviron("env.txt")
-url <- Sys.getenv("deepdata_url")
-res <- getURL(url, verbose = TRUE, ftp.use.epsv = FALSE, dirlistonly = TRUE)
-
-filenames <- unlist(strsplit(res, "\\n"))
-filenames <- sort(filenames[str_detect(filenames, ".json")], decreasing = TRUE)
-
-if (length(filenames) != 1) {
-  stop("Unexpected number of files found")
-}
-
-file_url <- paste0(url, "/", filenames[1])
-temp_file <- tempfile(pattern = "deepdata_", tmpdir = tempdir(), fileext = ".json")
-download.file(file_url, temp_file)
+json <- get_object("uploads/isa/deepdata.json", "obis-datasets", as = "text")
 ```
 
 ## Parsing the JSON file
-
-Earlier versions of the file were encoded in the non-standard `ISO-8859-1`, requiring the need to use `readLines` before parsing the data with the jsonlite package, but that is fixed now.
 
 ```{r message=FALSE, warning=FALSE}
 library(jsonlite)
 library(purrr)
 
-con <- file(temp_file)
-lines <- readLines(file(temp_file, encoding = "UTF-8"), warn = FALSE)
-close(con)
-records <- fromJSON(lines, simplifyDataFrame = TRUE)$DEEPDATA %>%
+records <- fromJSON(json, simplifyDataFrame = TRUE)$DEEPDATA %>%
   as_tibble()
 ```
 
@@ -485,8 +469,6 @@ writeLines(index, "output/index.html")
 ### Uploading to S3
 
 ```{r message=FALSE, warning=FALSE, results='hide', eval=TRUE}
-library("aws.s3")
-
 delete_object("hosted/isa/", bucket = "obis-datasets")
 files <- list.files("output", full.names = TRUE, recursive = TRUE, include.dirs = FALSE)
 
