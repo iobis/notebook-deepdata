@@ -3,4 +3,6 @@ env.txt
 *.json
 output
 index_cache
-
+.Rhistory
+*.Rproj
+.Rproj.user

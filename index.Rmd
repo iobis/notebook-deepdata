@@ -275,6 +275,7 @@ mof %>%
   head(10) %>%
   knitr::kable()
 ```
+
 ## Generating Darwin Core Archives
 
 ### Generating EML
